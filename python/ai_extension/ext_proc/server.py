@@ -376,8 +376,8 @@ class ExtProcServer(external_processor_pb2_grpc.ExternalProcessorServicer):
                 response: (
                     PromptMessages | RejectAction | None
                 ) = await make_request_webhook_request(
-                    webhook_host=webhook_cfg.host,
-                    webhook_port=webhook_cfg.port,
+                    webhook_host=webhook_cfg.host.host,
+                    webhook_port=webhook_cfg.host.port,
                     headers=headers,
                     promptMessages=handler.provider.construct_request_webhook_request_body(
                         body
@@ -616,8 +616,8 @@ class ExtProcServer(external_processor_pb2_grpc.ExternalProcessorServicer):
                                 response: (
                                     ResponseChoices | None
                                 ) = await make_response_webhook_request(
-                                    webhook_host=handler.resp_webhook.host,
-                                    webhook_port=handler.resp_webhook.port,
+                                    webhook_host=handler.resp_webhook.host.host,
+                                    webhook_port=handler.resp_webhook.host.port,
                                     headers=handler.resp.headers,
                                     rc=handler.provider.construct_response_webhook_request_body(
                                         body=jsn
