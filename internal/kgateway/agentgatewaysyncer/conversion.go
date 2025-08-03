@@ -37,6 +37,7 @@ import (
 	agwir "github.com/kgateway-dev/kgateway/v2/pkg/agentgateway/ir"
 	"github.com/kgateway-dev/kgateway/v2/pkg/utils/kubeutils"
 
+	"github.com/kgateway-dev/kgateway/v2/api/v1alpha1"
 	"github.com/kgateway-dev/kgateway/v2/internal/kgateway/ir"
 	"github.com/kgateway-dev/kgateway/v2/internal/kgateway/krtcollections"
 	"github.com/kgateway-dev/kgateway/v2/internal/kgateway/wellknown"
@@ -326,6 +327,14 @@ func buildADPFilters(
 				continue
 			}
 			filters = append(filters, h)
+		case gwv1.HTTPRouteFilterExtensionRef:
+			h, err := createADPExtensionRefFilter(ctx, filter.ExtensionRef, ns)
+			if err != nil {
+				return nil, err
+			}
+			if h != nil {
+				filters = append(filters, h)
+			}
 		default:
 			return nil, &reporter.RouteCondition{
 				Type:    gwv1.RouteConditionAccepted,
@@ -1243,6 +1252,69 @@ func defaultString[T ~string](s *T, def string) string {
 
 func toRouteKind(g schema.GroupVersionKind) gwv1.RouteGroupKind {
 	return gwv1.RouteGroupKind{Group: (*gwv1.Group)(&g.Group), Kind: gwv1.Kind(g.Kind)}
+}
+
+// createADPExtensionRefFilter creates ADP filter from Gateway API ExtensionRef filter
+func createADPExtensionRefFilter(
+	ctx RouteContext,
+	extensionRef *gwv1.LocalObjectReference,
+	ns string,
+) (*api.RouteFilter, *reporter.RouteCondition) {
+	if extensionRef == nil {
+		return nil, nil
+	}
+
+	// Check if it's a DirectResponse reference
+	if string(extensionRef.Group) == wellknown.DirectResponseGVK.Group && string(extensionRef.Kind) == wellknown.DirectResponseGVK.Kind {
+		// Look up the DirectResponse resource
+		directResponse := findDirectResponse(ctx, string(extensionRef.Name), ns)
+		if directResponse == nil {
+			return nil, &reporter.RouteCondition{
+				Type:    gwv1.RouteConditionAccepted,
+				Status:  metav1.ConditionFalse,
+				Reason:  gwv1.RouteReasonBackendNotFound,
+				Message: fmt.Sprintf("DirectResponse %s/%s not found", ns, extensionRef.Name),
+			}
+		}
+
+		// Convert to ADP DirectResponse filter
+		filter := &api.RouteFilter{
+			Kind: &api.RouteFilter_DirectResponse{
+				DirectResponse: &api.DirectResponse{
+					Status: directResponse.Spec.StatusCode,
+				},
+			},
+		}
+
+		// Add body if specified
+		if directResponse.Spec.Body != nil {
+			filter.GetDirectResponse().Body = []byte(*directResponse.Spec.Body)
+		}
+
+		return filter, nil
+	}
+
+	// Unsupported ExtensionRef
+	return nil, &reporter.RouteCondition{
+		Type:    gwv1.RouteConditionAccepted,
+		Status:  metav1.ConditionFalse,
+		Reason:  gwv1.RouteReasonIncompatibleFilters,
+		Message: fmt.Sprintf("unsupported ExtensionRef: %s/%s", extensionRef.Group, extensionRef.Kind),
+	}
+}
+
+// findDirectResponse looks up a DirectResponse resource by name and namespace
+func findDirectResponse(ctx RouteContext, name, namespace string) *v1alpha1.DirectResponse {
+	if ctx.DirectResponses == nil {
+		return nil
+	}
+	directResponses := krt.Fetch(ctx.Krt, ctx.DirectResponses)
+	for _, dr := range directResponses {
+		if dr.Name == name && dr.Namespace == namespace {
+			return dr
+		}
+	}
+	return nil
 }
 
 func routeGroupKindEqual(rgk1, rgk2 gwv1.RouteGroupKind) bool {
