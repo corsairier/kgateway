@@ -287,6 +287,8 @@ func buildADPFilters(
 	inputFilters []gwv1.HTTPRouteFilter,
 ) ([]*api.RouteFilter, *reporter.RouteCondition) {
 	var filters []*api.RouteFilter
+	var hasTerminalFilter bool
+
 	var mirrorBackendErr *reporter.RouteCondition
 	for _, filter := range inputFilters {
 		switch filter.Type {
@@ -303,11 +305,20 @@ func buildADPFilters(
 			}
 			filters = append(filters, h)
 		case gwv1.HTTPRouteFilterRequestRedirect:
+			if hasTerminalFilter {
+				return nil, &reporter.RouteCondition{
+					Type:    gwv1.RouteConditionAccepted,
+					Status:  metav1.ConditionFalse,
+					Reason:  gwv1.RouteReasonIncompatibleFilters,
+					Message: "Cannot combine RequestRedirect with another terminal filter (e.g., DirectResponse).",
+				}
+			}
 			h := createADPRedirectFilter(filter.RequestRedirect)
 			if h == nil {
 				continue
 			}
 			filters = append(filters, h)
+			hasTerminalFilter = true
 		case gwv1.HTTPRouteFilterRequestMirror:
 			h, err := createADPMirrorFilter(ctx, filter.RequestMirror, ns, wellknown.HTTPRouteGVK)
 			if err != nil {
@@ -333,6 +344,17 @@ func buildADPFilters(
 				return nil, err
 			}
 			if h != nil {
+				if _, ok := h.Kind.(*api.RouteFilter_DirectResponse); ok {
+					if hasTerminalFilter {
+						return nil, &reporter.RouteCondition{
+							Type:    gwv1.RouteConditionAccepted,
+							Status:  metav1.ConditionFalse,
+							Reason:  gwv1.RouteReasonIncompatibleFilters,
+							Message: "Cannot combine DirectResponse filter with another terminal filter (e.g., RequestRedirect).",
+						}
+					}
+					hasTerminalFilter = true
+				}
 				filters = append(filters, h)
 			}
 		default:
