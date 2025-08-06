@@ -193,16 +193,16 @@ var _ = DescribeTable("Basic agentgateway Tests",
 		},
 	}),
 	Entry("Direct response", translatorTestCase{
-		inputFile:  "directresponse/manifest.yaml",
-		outputFile: "directresponse.yaml",
+		inputFile:  "direct-response/manifest.yaml",
+		outputFile: "direct-response.yaml",
 		gwNN: types.NamespacedName{
 			Namespace: "default",
 			Name:      "example-gateway",
 		},
 	}),
 	Entry("DirectResponse with missing reference reports correctly", translatorTestCase{
-		inputFile:  "directresponse/missing-ref.yaml",
-		outputFile: "directresponse/missing-ref.yaml",
+		inputFile:  "direct-response/missing-ref.yaml",
+		outputFile: "direct-response/missing-ref.yaml",
 		gwNN: types.NamespacedName{
 			Namespace: "default",
 			Name:      "example-gateway",
@@ -234,8 +234,8 @@ var _ = DescribeTable("Basic agentgateway Tests",
 		},
 	}),
 	Entry("DirectResponse with overlapping filters reports correctly", translatorTestCase{
-		inputFile:  "directresponse/overlapping-filters.yaml",
-		outputFile: "directresponse/overlapping-filters.yaml",
+		inputFile:  "direct-response/overlapping-filters.yaml",
+		outputFile: "direct-response/overlapping-filters.yaml",
 		gwNN: types.NamespacedName{
 			Namespace: "default",
 			Name:      "example-gateway",
@@ -260,8 +260,8 @@ var _ = DescribeTable("Basic agentgateway Tests",
 		},
 	}),
 	Entry("DirectResponse with invalid backendRef filter reports correctly", translatorTestCase{
-		inputFile:  "directresponse/invalid-backendref-filter.yaml",
-		outputFile: "directresponse/invalid-backendref-filter.yaml",
+		inputFile:  "direct-response/invalid-backendref-filter.yaml",
+		outputFile: "direct-response/invalid-backendref-filter.yaml",
 		gwNN: types.NamespacedName{
 			Namespace: "default",
 			Name:      "example-gateway",
