@@ -192,4 +192,100 @@ var _ = DescribeTable("Basic agentgateway Tests",
 			Name:      "example-gateway",
 		},
 	}),
+	Entry("Direct response", translatorTestCase{
+		inputFile:  "directresponse/manifest.yaml",
+		outputFile: "directresponse.yaml",
+		gwNN: types.NamespacedName{
+			Namespace: "default",
+			Name:      "example-gateway",
+		},
+	}),
+	Entry("DirectResponse with missing reference reports correctly", translatorTestCase{
+		inputFile:  "directresponse/missing-ref.yaml",
+		outputFile: "directresponse/missing-ref.yaml",
+		gwNN: types.NamespacedName{
+			Namespace: "default",
+			Name:      "example-gateway",
+		},
+		assertReports: func(gwNN types.NamespacedName, reportsMap reports.ReportMap) {
+			route := &gwv1.HTTPRoute{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "example-route",
+					Namespace: "default",
+				},
+			}
+			routeStatus := reportsMap.BuildRouteStatus(context.Background(), route, wellknown.DefaultGatewayClassName)
+			Expect(routeStatus).NotTo(BeNil())
+			Expect(routeStatus.Parents).To(HaveLen(1))
+
+			// Assert ResolvedRefs=True since the route structure is valid
+			resolvedRefs := meta.FindStatusCondition(routeStatus.Parents[0].Conditions, string(gwv1.RouteConditionResolvedRefs))
+			Expect(resolvedRefs).NotTo(BeNil())
+			Expect(resolvedRefs.Status).To(Equal(metav1.ConditionTrue))
+			Expect(resolvedRefs.Reason).To(Equal(string(gwv1.RouteReasonResolvedRefs)))
+
+			// Assert Accepted=False reports the missing DirectResponse
+			acceptedCond := meta.FindStatusCondition(routeStatus.Parents[0].Conditions, string(gwv1.RouteConditionAccepted))
+			Expect(acceptedCond).NotTo(BeNil())
+			Expect(acceptedCond.Status).To(Equal(metav1.ConditionFalse))
+			Expect(acceptedCond.Reason).To(Equal(string(gwv1.RouteReasonBackendNotFound)))
+			Expect(acceptedCond.Message).To(ContainSubstring("DirectResponse"))
+			Expect(acceptedCond.Message).To(ContainSubstring("not found"))
+		},
+	}),
+	Entry("DirectResponse with overlapping filters reports correctly", translatorTestCase{
+		inputFile:  "directresponse/overlapping-filters.yaml",
+		outputFile: "directresponse/overlapping-filters.yaml",
+		gwNN: types.NamespacedName{
+			Namespace: "default",
+			Name:      "example-gateway",
+		},
+		assertReports: func(gwNN types.NamespacedName, reportsMap reports.ReportMap) {
+			route := &gwv1.HTTPRoute{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "example-route",
+					Namespace: "default",
+				},
+			}
+			routeStatus := reportsMap.BuildRouteStatus(context.Background(), route, wellknown.DefaultGatewayClassName)
+			Expect(routeStatus).NotTo(BeNil())
+			Expect(routeStatus.Parents).To(HaveLen(1))
+
+			// Check for Accepted=False condition due to overlapping terminal filters
+			acceptedCond := meta.FindStatusCondition(routeStatus.Parents[0].Conditions, string(gwv1.RouteConditionAccepted))
+			Expect(acceptedCond).NotTo(BeNil())
+			Expect(acceptedCond.Status).To(Equal(metav1.ConditionFalse))
+			Expect(acceptedCond.Reason).To(Equal(string(gwv1.RouteReasonIncompatibleFilters)))
+			Expect(acceptedCond.Message).To(ContainSubstring("terminal filter"))
+		},
+	}),
+	Entry("DirectResponse with invalid backendRef filter reports correctly", translatorTestCase{
+		inputFile:  "directresponse/invalid-backendref-filter.yaml",
+		outputFile: "directresponse/invalid-backendref-filter.yaml",
+		gwNN: types.NamespacedName{
+			Namespace: "default",
+			Name:      "example-gateway",
+		},
+		assertReports: func(gwNN types.NamespacedName, reportsMap reports.ReportMap) {
+			route := &gwv1.HTTPRoute{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "example-route",
+					Namespace: "default",
+				},
+			}
+			routeStatus := reportsMap.BuildRouteStatus(context.Background(), route, wellknown.DefaultGatewayClassName)
+			Expect(routeStatus).NotTo(BeNil())
+			Expect(routeStatus.Parents).To(HaveLen(1))
+
+			// DirectResponse attached to backendRef should be ignored, route should resolve normally
+			acceptedCond := meta.FindStatusCondition(routeStatus.Parents[0].Conditions, string(gwv1.RouteConditionAccepted))
+			Expect(acceptedCond).NotTo(BeNil())
+			Expect(acceptedCond.Status).To(Equal(metav1.ConditionTrue))
+			Expect(acceptedCond.Reason).To(Equal(string(gwv1.RouteReasonAccepted)))
+
+			resolvedRefs := meta.FindStatusCondition(routeStatus.Parents[0].Conditions, string(gwv1.RouteConditionResolvedRefs))
+			Expect(resolvedRefs).NotTo(BeNil())
+			Expect(resolvedRefs.Status).To(Equal(metav1.ConditionTrue))
+		},
+	}),
 )
