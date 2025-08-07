@@ -229,8 +229,7 @@ var _ = DescribeTable("Basic agentgateway Tests",
 			Expect(acceptedCond).NotTo(BeNil())
 			Expect(acceptedCond.Status).To(Equal(metav1.ConditionFalse))
 			Expect(acceptedCond.Reason).To(Equal(string(gwv1.RouteReasonBackendNotFound)))
-			Expect(acceptedCond.Message).To(ContainSubstring("DirectResponse"))
-			Expect(acceptedCond.Message).To(ContainSubstring("not found"))
+			Expect(acceptedCond.Message).To(Equal("DirectResponse default/non-existent-ref not found"))
 		},
 	}),
 	Entry("DirectResponse with overlapping filters reports correctly", translatorTestCase{
