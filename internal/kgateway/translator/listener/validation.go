@@ -232,9 +232,10 @@ func validateListeners(gw *ir.Gateway, reporter reports.Reporter) []ir.Listener 
 	// Add the final conditions on the Gateway
 	if gw.Obj.Spec.AllowedListeners == nil {
 		reporter.Gateway(gw.Obj).SetCondition(reports.GatewayCondition{
-			Type:   GatewayConditionAttachedListenerSets,
-			Status: metav1.ConditionUnknown,
-			Reason: GatewayReasonListenerSetsNotAllowed,
+			Type:    GatewayConditionAttachedListenerSets,
+			Status:  metav1.ConditionUnknown,
+			Reason:  GatewayReasonListenerSetsNotAllowed,
+			Message: "No ListenerSets allowed on this Gateway",
 		})
 		return validListeners
 	}
@@ -250,29 +251,43 @@ func validateListeners(gw *ir.Gateway, reporter reports.Reporter) []ir.Listener 
 			Status: metav1.ConditionFalse,
 			Reason: gwv1.GatewayReasonInvalid,
 		})
+		// Also set AttachedListenerSets condition if AllowedListenerSets is not nil
+		if gw.AllowedListenerSets != nil {
+			reporter.Gateway(gw.Obj).SetCondition(reports.GatewayCondition{
+				Type:    AttachedListenerSetsConditionType,
+				Status:  metav1.ConditionFalse,
+				Reason:  gwv1.GatewayReasonNoResources,
+				Message: "No ListenerSets attached to the Gateway",
+			})
+		}
 		return validListeners
 	}
 
-	listenerSetListenerExists := false
-	for _, listener := range validListeners {
-		if _, ok := listener.Parent.(*gwxv1a1.XListenerSet); ok {
-			listenerSetListenerExists = true
-			break
+	// Only set AttachedListenerSets condition if AllowedListenerSets is not nil
+	if gw.AllowedListenerSets != nil {
+		listenerSetListenerExists := false
+		for _, listener := range validListeners {
+			if _, ok := listener.Parent.(*gwxv1a1.XListenerSet); ok {
+				listenerSetListenerExists = true
+				break
+			}
 		}
-	}
 
-	if listenerSetListenerExists {
-		reporter.Gateway(gw.Obj).SetCondition(reports.GatewayCondition{
-			Type:   GatewayConditionAttachedListenerSets,
-			Status: metav1.ConditionTrue,
-			Reason: GatewayReasonListenerSetsAttached,
-		})
-	} else {
-		reporter.Gateway(gw.Obj).SetCondition(reports.GatewayCondition{
-			Type:   GatewayConditionAttachedListenerSets,
-			Status: metav1.ConditionFalse,
-			Reason: gwv1.GatewayReasonNoResources,
-		})
+		if listenerSetListenerExists {
+			reporter.Gateway(gw.Obj).SetCondition(reports.GatewayCondition{
+				Type:    GatewayConditionAttachedListenerSets,
+				Status:  metav1.ConditionTrue,
+				Reason:  GatewayReasonListenerSetsAttached,
+				Message: "ListenerSets have been attached to the Gateway",
+			})
+		} else {
+			reporter.Gateway(gw.Obj).SetCondition(reports.GatewayCondition{
+				Type:    GatewayConditionAttachedListenerSets,
+				Status:  metav1.ConditionFalse,
+				Reason:  gwv1.GatewayReasonNoResources,
+				Message: "No ListenerSets attached to the Gateway",
+			})
+		}
 	}
 	return validListeners
 }
