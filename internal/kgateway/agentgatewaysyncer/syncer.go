@@ -1181,6 +1181,17 @@ func (s *AgentGwSyncer) syncGatewayStatus(ctx context.Context, logger *slog.Logg
 
 	// TODO: add gatewayStatusMetrics
 
+	// Apply attached routes counts to listener reports before building status
+	for gwnn, gwReport := range gatewayReports.Reports {
+		if attachedRoutesForGw, exists := gatewayReports.AttachedRoutes[gwnn]; exists {
+			for listenerName, count := range attachedRoutesForGw {
+				if listenerReport := gwReport.ListenerName(listenerName); listenerReport != nil {
+					listenerReport.SetAttachedRoutes(count)
+				}
+			}
+		}
+	}
+
 	// Create a minimal ReportMap with just the gateway reports for BuildGWStatus to work
 	rm := reports.ReportMap{
 		Gateways: gatewayReports.Reports,
