@@ -112,17 +112,22 @@ func convertHTTPRouteToADP(ctx RouteContext, r gwv1.HTTPRouteRule,
 	})
 	// Return filter error if present, otherwise return backend error
 	var errs []error
+	var errorReason gwv1.RouteConditionReason = gwv1.RouteReasonBackendNotFound
 	if filterError != nil {
-		errs = append(errs, fmt.Errorf("filter error: %s", filterError.Message))
+		errs = append(errs, fmt.Errorf("%s", filterError.Message))
+		errorReason = filterError.Reason
 	}
 	if backendErr != nil {
 		errs = append(errs, fmt.Errorf("backend error: %s", backendErr.Message))
+		if filterError == nil {
+			errorReason = backendErr.Reason
+		}
 	}
 	if len(errs) > 0 {
 		return res, &reporter.RouteCondition{
 			Type:    gwv1.RouteConditionAccepted,
 			Status:  metav1.ConditionFalse,
-			Reason:  gwv1.RouteReasonUnsupportedValue,
+			Reason:  errorReason,
 			Message: errors.Join(errs...).Error(),
 		}
 	}

@@ -302,7 +302,7 @@ type Inputs struct {
 	InferencePools krt.Collection[*inf.InferencePool]
 
 	// kgateway resources
-	Backends *krtcollections.BackendIndex
+	Backends        *krtcollections.BackendIndex
 	BackendsTemp    krt.Collection[*v1alpha1.Backend]
 	DirectResponses krt.Collection[*v1alpha1.DirectResponse]
 }
