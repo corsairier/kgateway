@@ -221,7 +221,7 @@ func validateListeners(gw *ir.Gateway, reporter reports.Reporter) []ir.Listener 
 	}
 
 	// Add the final conditions on the Gateway
-	if gw.AllowedListenerSets == nil {
+	if gw.Obj.Spec.AllowedListeners == nil {
 		reporter.Gateway(gw.Obj).SetCondition(reports.GatewayCondition{
 			Type:    AttachedListenerSetsConditionType,
 			Status:  metav1.ConditionUnknown,
@@ -241,8 +241,8 @@ func validateListeners(gw *ir.Gateway, reporter reports.Reporter) []ir.Listener 
 			Status: metav1.ConditionFalse,
 			Reason: gwv1.GatewayReasonInvalid,
 		})
-		// Also set AttachedListenerSets condition if AllowedListenerSets is not nil
-		if gw.AllowedListenerSets != nil {
+		// Set AttachedListenerSets condition if AllowedListeners is configured
+		if gw.Obj.Spec.AllowedListeners != nil {
 			reporter.Gateway(gw.Obj).SetCondition(reports.GatewayCondition{
 				Type:    AttachedListenerSetsConditionType,
 				Status:  metav1.ConditionFalse,
@@ -253,8 +253,8 @@ func validateListeners(gw *ir.Gateway, reporter reports.Reporter) []ir.Listener 
 		return validListeners
 	}
 
-	// Only set AttachedListenerSets condition if AllowedListenerSets is not nil
-	if gw.AllowedListenerSets != nil {
+	// Only set AttachedListenerSets condition if AllowedListeners is configured
+	if gw.Obj.Spec.AllowedListeners != nil {
 		listenerSetListenerExists := false
 		for _, listener := range validListeners {
 			if _, ok := listener.Parent.(*gwxv1a1.XListenerSet); ok {
