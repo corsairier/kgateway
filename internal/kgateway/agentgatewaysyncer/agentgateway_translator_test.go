@@ -192,7 +192,7 @@ var _ = DescribeTable("Basic agentgateway Tests",
 			Name:      "example-gateway",
 		},
 	}),
-  Entry("AI Backend with bedrock provider", translatorTestCase{
+  	Entry("AI Backend with bedrock provider", translatorTestCase{
 		inputFile:  "backend-protocol/bedrock-backend.yaml",
 		outputFile: "backend-protocol/bedrock-backend.yaml",
 
