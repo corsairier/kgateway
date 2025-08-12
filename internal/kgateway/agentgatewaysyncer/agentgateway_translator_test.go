@@ -184,9 +184,18 @@ var _ = DescribeTable("Basic agentgateway Tests",
 			Name:      "example-gateway",
 		},
 	}),
-	Entry("AI Backend with openai provider", translatorTestCase{
+	Entry("AI Backend with a2a provider", translatorTestCase{
 		inputFile:  "backend-protocol/a2a-backend.yaml",
 		outputFile: "backend-protocol/a2a-backend.yaml",
+		gwNN: types.NamespacedName{
+			Namespace: "default",
+			Name:      "example-gateway",
+		},
+	}),
+  Entry("AI Backend with bedrock provider", translatorTestCase{
+		inputFile:  "backend-protocol/bedrock-backend.yaml",
+		outputFile: "backend-protocol/bedrock-backend.yaml",
+
 		gwNN: types.NamespacedName{
 			Namespace: "default",
 			Name:      "example-gateway",
@@ -195,6 +204,7 @@ var _ = DescribeTable("Basic agentgateway Tests",
 	Entry("Direct response", translatorTestCase{
 		inputFile:  "direct-response/manifest.yaml",
 		outputFile: "direct-response.yaml",
+
 		gwNN: types.NamespacedName{
 			Namespace: "default",
 			Name:      "example-gateway",
