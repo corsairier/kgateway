@@ -228,7 +228,7 @@ func TestBasic(t *testing.T) {
 				a.NotNil(resolvedRefs)
 				a.Equal(string(gwv1.RouteReasonBackendNotFound), resolvedRefs.Reason)
 				a.Equal(metav1.ConditionFalse, resolvedRefs.Status)
-				a.Equal(`Service "example-svc" not found`, resolvedRefs.Message)
+				a.Equal(`Service "example-svc" not found (port 80)`, resolvedRefs.Message)
 				a.Equal(int64(0), resolvedRefs.ObservedGeneration)
 			},
 		})
@@ -453,7 +453,7 @@ func TestBasic(t *testing.T) {
 				resolvedRefs := meta.FindStatusCondition(routeStatus.Parents[0].Conditions, string(gwv1.RouteConditionResolvedRefs))
 				a.NotNil(resolvedRefs)
 				a.Equal(metav1.ConditionFalse, resolvedRefs.Status)
-				a.Equal(`Service "example-tcp-svc" not found`, resolvedRefs.Message)
+				a.Equal(`Service "example-tcp-svc" not found (port 8080)`, resolvedRefs.Message)
 			},
 		})
 	})
@@ -545,7 +545,7 @@ func TestBasic(t *testing.T) {
 				resolvedRefs := meta.FindStatusCondition(routeStatus.Parents[0].Conditions, string(gwv1.RouteConditionResolvedRefs))
 				a.NotNil(resolvedRefs)
 				a.Equal(metav1.ConditionFalse, resolvedRefs.Status)
-				a.Equal("Service \"example-tls-svc\" not found", resolvedRefs.Message)
+				a.Equal("Service \"example-tls-svc\" not found (port 443)", resolvedRefs.Message)
 			},
 		})
 	})
@@ -637,7 +637,7 @@ func TestBasic(t *testing.T) {
 				resolvedRefs := meta.FindStatusCondition(routeStatus.Parents[0].Conditions, string(gwv1.RouteConditionResolvedRefs))
 				a.NotNil(resolvedRefs)
 				a.Equal(metav1.ConditionFalse, resolvedRefs.Status)
-				a.Equal(`Service "example-grpc-svc" not found`, resolvedRefs.Message)
+				a.Equal(`Service "example-grpc-svc" not found (port 9000)`, resolvedRefs.Message)
 			},
 		})
 	})

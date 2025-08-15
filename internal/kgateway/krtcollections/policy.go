@@ -43,9 +43,23 @@ var (
 type NotFoundError struct {
 	// I call this `NotFound` so its easy to find in krt dump.
 	NotFoundObj ir.ObjectSource
+	// Port is the port number that was requested but not found
+	Port *int32
+	// Reason helps distinguish between different error scenarios
+	Reason string
 }
 
 func (n *NotFoundError) Error() string {
+	if n.Port != nil {
+		switch n.Reason {
+		case "PortNotFound":
+			return fmt.Sprintf("%s \"%s\" exists but does not expose port %d", n.NotFoundObj.Kind, n.NotFoundObj.Name, *n.Port)
+		case "ServiceNotFound":
+			return fmt.Sprintf("%s \"%s\" not found (port %d)", n.NotFoundObj.Kind, n.NotFoundObj.Name, *n.Port)
+		default:
+			return fmt.Sprintf("%s \"%s\" not found (port %d)", n.NotFoundObj.Kind, n.NotFoundObj.Name, *n.Port)
+		}
+	}
 	return fmt.Sprintf("%s \"%s\" not found", n.NotFoundObj.Kind, n.NotFoundObj.Name)
 }
 
@@ -175,8 +189,25 @@ func (i *BackendIndex) getBackend(kctx krt.HandlerContext, gk schema.GroupKind, 
 		var err error
 		if up, err = i.getBackendFromAlias(kctx, gk, n, port); err != nil {
 			// getBackendFromAlias returns ErrUnknownBackendKind when there are no aliases
-			// so return our own NotFoundError here
-			return nil, &NotFoundError{NotFoundObj: key}
+			// Check if any backend exists with the same service name but different port
+			serviceExists := false
+			backends := krt.Fetch(kctx, col, krt.FilterGeneric(func(obj interface{}) bool {
+				backend := obj.(ir.BackendObjectIR)
+				return backend.Name == key.Name &&
+					backend.Namespace == key.Namespace &&
+					backend.Kind == key.Kind
+			}))
+
+			if len(backends) > 0 {
+				serviceExists = true
+			}
+
+			// Return appropriate error based on whether service exists
+			if serviceExists {
+				return nil, &NotFoundError{NotFoundObj: key, Port: &port, Reason: "PortNotFound"}
+			} else {
+				return nil, &NotFoundError{NotFoundObj: key, Port: &port, Reason: "ServiceNotFound"}
+			}
 		}
 	}
 
@@ -228,7 +259,34 @@ func (i *BackendIndex) getBackendFromAlias(kctx krt.HandlerContext, gk schema.Gr
 	}
 
 	if out == nil {
-		return nil, &NotFoundError{NotFoundObj: key.ObjectSource}
+		// Check if any backend exists with the same service name but different port across all alias collections
+		serviceExists := false
+		objSource := key.ObjectSource
+		for _, actualGk := range actualGks {
+			col, ok := i.availableBackends[actualGk]
+			if !ok {
+				continue
+			}
+
+			backends := krt.Fetch(kctx, col, krt.FilterGeneric(func(obj interface{}) bool {
+				backend := obj.(ir.BackendObjectIR)
+				return backend.Name == objSource.Name &&
+					backend.Namespace == objSource.Namespace &&
+					backend.Kind == objSource.Kind
+			}))
+
+			if len(backends) > 0 {
+				serviceExists = true
+				break
+			}
+		}
+
+		// Return appropriate error based on whether service exists
+		if serviceExists {
+			return nil, &NotFoundError{NotFoundObj: objSource, Port: &port, Reason: "PortNotFound"}
+		} else {
+			return nil, &NotFoundError{NotFoundObj: objSource, Port: &port, Reason: "ServiceNotFound"}
+		}
 	}
 
 	return out, nil
