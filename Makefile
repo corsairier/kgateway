@@ -18,7 +18,7 @@
 help: NAME_COLUMN_WIDTH=35
 help: LINE_COLUMN_WIDTH=5
 help: ## Output the self-documenting make targets
-	@grep -hnE '^[%a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = "[:]|(## )"}; {printf "\033[36mL%-$(LINE_COLUMN_WIDTH)s%-$(NAME_COLUMN_WIDTH)s\033[0m %s\n", $$1, $$2, $$4}'
+	@grep -hnE '^[%a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = "[:]|(## )"}; {printf "\033[36mL%-$(LINE_COLUMN_WIDTH)s%-$(NAME_COLUMN_WIDTH)s\033[0m %s\n", $$1, $$2, $$4}'
 
 #----------------------------------------------------------------------------------
 # Base
@@ -583,6 +583,29 @@ TEST_AI_PROVIDER_SERVER_DIR := $(ROOTDIR)/test/mocks/mock-ai-provider-server
 test-ai-provider-docker:
 	docker buildx build $(LOAD_OR_PUSH) $(PLATFORM_MULTIARCH) -f $(TEST_AI_PROVIDER_SERVER_DIR)/Dockerfile $(TEST_AI_PROVIDER_SERVER_DIR) \
 		-t $(IMAGE_REGISTRY)/test-ai-provider:$(VERSION)
+
+#----------------------------------------------------------------------------------
+# Load Testing
+#----------------------------------------------------------------------------------
+
+# Default values that match setup-kind.sh defaults
+CLUSTER_NAME ?= kind
+INSTALL_NAMESPACE ?= kgateway-system
+
+.PHONY: run-load-tests
+run-load-tests: ## Run KGateway load testing suite (requires existing cluster and installation)
+	SKIP_INSTALL=true CLUSTER_NAME=$(CLUSTER_NAME) INSTALL_NAMESPACE=$(INSTALL_NAMESPACE) \
+	go test -v ./test/kubernetes/e2e/tests -run "^TestKgateway$$/^AttachedRoutes$$"
+
+.PHONY: run-load-tests-baseline
+run-load-tests-baseline: ## Run baseline load tests (1000 routes)
+	SKIP_INSTALL=true CLUSTER_NAME=$(CLUSTER_NAME) INSTALL_NAMESPACE=$(INSTALL_NAMESPACE) \
+	go test -v ./test/kubernetes/e2e/tests -run "^TestKgateway$$/^AttachedRoutes$$/^TestAttachedRoutesBaseline$$"
+
+.PHONY: run-load-tests-production
+run-load-tests-production: ## Run production load tests (5000 routes)
+	SKIP_INSTALL=true CLUSTER_NAME=$(CLUSTER_NAME) INSTALL_NAMESPACE=$(INSTALL_NAMESPACE) \
+	go test -v ./test/kubernetes/e2e/tests -run "^TestKgateway$$/^AttachedRoutes$$/^TestAttachedRoutesProduction$$"
 
 #----------------------------------------------------------------------------------
 # Targets for running Kubernetes Gateway API conformance tests

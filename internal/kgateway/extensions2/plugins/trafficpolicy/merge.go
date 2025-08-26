@@ -165,6 +165,21 @@ func mergeCSRF(
 	defaultMerge(p1, p2, p2Ref, p2MergeOrigins, opts, mergeOrigins, accessor, "csrf")
 }
 
+func mergeHeaderModifiers(
+	p1, p2 *TrafficPolicy,
+	p2Ref *pluginsdkir.AttachedPolicyRef,
+	p2MergeOrigins pluginsdkir.MergeOrigins,
+	opts policy.MergeOptions,
+	mergeOrigins pluginsdkir.MergeOrigins,
+) {
+	accessor := fieldAccessor[headerModifiersIR]{
+		Get: func(spec *trafficPolicySpecIr) *headerModifiersIR { return spec.headerModifiers },
+		Set: func(spec *trafficPolicySpecIr, val *headerModifiersIR) { spec.headerModifiers = val },
+	}
+
+	defaultMerge(p1, p2, p2Ref, p2MergeOrigins, opts, mergeOrigins, accessor, "headerModifiers")
+}
+
 func mergeBuffer(
 	p1, p2 *TrafficPolicy,
 	p2Ref *pluginsdkir.AttachedPolicyRef,
@@ -193,20 +208,6 @@ func mergeAutoHostRewrite(
 	defaultMerge(p1, p2, p2Ref, p2MergeOrigins, opts, mergeOrigins, accessor, "autoHostRewrite")
 }
 
-func mergeHashPolicies(
-	p1, p2 *TrafficPolicy,
-	p2Ref *pluginsdkir.AttachedPolicyRef,
-	p2MergeOrigins pluginsdkir.MergeOrigins,
-	opts policy.MergeOptions,
-	mergeOrigins pluginsdkir.MergeOrigins,
-) {
-	accessor := fieldAccessor[hashPolicyIR]{
-		Get: func(spec *trafficPolicySpecIr) *hashPolicyIR { return spec.hashPolicies },
-		Set: func(spec *trafficPolicySpecIr, val *hashPolicyIR) { spec.hashPolicies = val },
-	}
-	defaultMerge(p1, p2, p2Ref, p2MergeOrigins, opts, mergeOrigins, accessor, "hashPolicies")
-}
-
 func mergeTimeouts(
 	p1, p2 *TrafficPolicy,
 	p2Ref *pluginsdkir.AttachedPolicyRef,
@@ -219,6 +220,20 @@ func mergeTimeouts(
 		Set: func(spec *trafficPolicySpecIr, val *timeoutsIR) { spec.timeouts = val },
 	}
 	defaultMerge(p1, p2, p2Ref, p2MergeOrigins, opts, mergeOrigins, accessor, "timeouts")
+}
+
+func mergeRBAC(
+	p1, p2 *TrafficPolicy,
+	p2Ref *pluginsdkir.AttachedPolicyRef,
+	p2MergeOrigins pluginsdkir.MergeOrigins,
+	opts policy.MergeOptions,
+	mergeOrigins pluginsdkir.MergeOrigins,
+) {
+	accessor := fieldAccessor[rbacIR]{
+		Get: func(spec *trafficPolicySpecIr) *rbacIR { return spec.rbac },
+		Set: func(spec *trafficPolicySpecIr, val *rbacIR) { spec.rbac = val },
+	}
+	defaultMerge(p1, p2, p2Ref, p2MergeOrigins, opts, mergeOrigins, accessor, "rbac")
 }
 
 func mergeRetry(
