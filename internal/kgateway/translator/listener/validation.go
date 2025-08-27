@@ -235,7 +235,7 @@ func validateListeners(gw *ir.Gateway, reporter reports.Reporter) []ir.Listener 
 			Type:    GatewayConditionAttachedListenerSets,
 			Status:  metav1.ConditionUnknown,
 			Reason:  GatewayReasonListenerSetsNotAllowed,
-			Message: "No ListenerSets allowed on this Gateway",
+			Message: "No ListenerSets are allowed to attach to this Gateway",
 		})
 		return validListeners
 	}
