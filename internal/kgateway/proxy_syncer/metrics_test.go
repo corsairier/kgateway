@@ -17,9 +17,10 @@ import (
 
 	"github.com/kgateway-dev/kgateway/v2/internal/kgateway/ir"
 	tmetrics "github.com/kgateway-dev/kgateway/v2/internal/kgateway/translator/metrics"
-	"github.com/kgateway-dev/kgateway/v2/internal/kgateway/utils/krtutil"
+	krtinternal "github.com/kgateway-dev/kgateway/v2/internal/kgateway/utils/krtutil"
 	"github.com/kgateway-dev/kgateway/v2/pkg/metrics"
 	"github.com/kgateway-dev/kgateway/v2/pkg/metrics/metricstest"
+	krtpkg "github.com/kgateway-dev/kgateway/v2/pkg/utils/krtutil"
 )
 
 const (
@@ -36,6 +37,9 @@ func setupTest() {
 func TestCollectStatusSyncMetrics_Success(t *testing.T) {
 	setupTest()
 
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
 	finishFunc := collectStatusSyncMetrics(statusSyncMetricLabels{
 		Name:      testGatewayName,
 		Namespace: testNamespace,
@@ -43,7 +47,10 @@ func TestCollectStatusSyncMetrics_Success(t *testing.T) {
 	})
 	finishFunc(nil)
 
-	currentMetrics := metricstest.MustGatherMetrics(t)
+	currentMetrics := metricstest.MustGatherMetricsContext(ctx, t,
+		"kgateway_status_syncer_status_syncs_total",
+		"kgateway_status_syncer_status_sync_duration_seconds",
+	)
 
 	currentMetrics.AssertMetric("kgateway_status_syncer_status_syncs_total", &metricstest.ExpectedMetric{
 		Labels: []metrics.Label{
@@ -66,6 +73,9 @@ func TestCollectStatusSyncMetrics_Success(t *testing.T) {
 func TestCollectStatusSyncMetrics_Error(t *testing.T) {
 	setupTest()
 
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
 	finishFunc := collectStatusSyncMetrics(statusSyncMetricLabels{
 		Name:      testGatewayName,
 		Namespace: testNamespace,
@@ -73,7 +83,10 @@ func TestCollectStatusSyncMetrics_Error(t *testing.T) {
 	})
 	finishFunc(assert.AnError)
 
-	currentMetrics := metricstest.MustGatherMetrics(t)
+	currentMetrics := metricstest.MustGatherMetricsContext(ctx, t,
+		"kgateway_status_syncer_status_syncs_total",
+		"kgateway_status_syncer_status_sync_duration_seconds",
+	)
 
 	currentMetrics.AssertMetric("kgateway_status_syncer_status_syncs_total", &metricstest.ExpectedMetric{
 		Labels: []metrics.Label{
@@ -208,16 +221,16 @@ func TestXDSSnapshotsCollectionMetrics(t *testing.T) {
 			mockUccWithEndpoints := krttest.GetMockCollection[UccWithEndpoints](mock)
 			mockUccWithCluster := krttest.GetMockCollection[uccWithCluster](mock)
 
-			c := snapshotPerClient(krtutil.KrtOptions{}, mockUcc, mockGatewayXDSResorces,
+			c := snapshotPerClient(krtinternal.KrtOptions{}, mockUcc, mockGatewayXDSResorces,
 				PerClientEnvoyEndpoints{
 					endpoints: mockUccWithEndpoints,
-					index: krtutil.UnnamedIndex(mockUccWithEndpoints, func(ucc UccWithEndpoints) []string {
+					index: krtpkg.UnnamedIndex(mockUccWithEndpoints, func(ucc UccWithEndpoints) []string {
 						return []string{ucc.Client.ResourceName()}
 					}),
 				},
 				PerClientEnvoyClusters{
 					clusters: mockUccWithCluster,
-					index: krtutil.UnnamedIndex(mockUccWithCluster, func(ucc uccWithCluster) []string {
+					index: krtpkg.UnnamedIndex(mockUccWithCluster, func(ucc uccWithCluster) []string {
 						return []string{ucc.Client.ResourceName()}
 					}),
 				})
@@ -309,7 +322,7 @@ func TestResourceSyncMetrics(t *testing.T) {
 		Namespace:    testNS,
 		ResourceType: testResource,
 		ResourceName: testName,
-	}, false, resourcesXDSSyncsTotal, resourcesXDSyncDuration)
+	}, false, resourcesXDSSyncsTotal, resourcesXDSSyncDuration)
 
 	gathered := metricstest.MustGatherMetricsContext(ctx, t,
 		"kgateway_resources_syncs_started_total",

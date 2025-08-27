@@ -81,7 +81,7 @@ func NewPlugin(ctx context.Context, commonCols *common.CommonCollections) *extpl
 				},
 			},
 		},
-		ContributesRegistration: map[schema.GroupKind]func(){
+		ContributesLeaderAction: map[schema.GroupKind]func(){
 			wellknown.InferencePoolGVK.GroupKind(): buildRegisterCallback(
 				ctx,
 				commonCols,
@@ -215,11 +215,11 @@ func (p *endpointPickerPass) ApplyForBackend(
 			irPool.obj.GetNamespace(),
 			irPool.obj.GetName())
 	}
-	irPool.endpoints = eps
+	irPool.setEndpoints(eps)
 
 	// Tell the EPP the subset of endpoints to choose from.
 	vs := make([]*structpb.Value, 0, len(eps))
-	for _, ep := range eps {
+	for _, ep := range irPool.getEndpoints() {
 		vs = append(vs, structpb.NewStringValue(ep.string()))
 	}
 	hintStruct := &structpb.Struct{

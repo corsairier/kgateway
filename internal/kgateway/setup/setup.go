@@ -23,6 +23,7 @@ import (
 	"github.com/kgateway-dev/kgateway/v2/internal/kgateway/extensions2/common"
 	"github.com/kgateway-dev/kgateway/v2/internal/kgateway/krtcollections"
 	"github.com/kgateway-dev/kgateway/v2/internal/kgateway/wellknown"
+	agentgatewayplugins "github.com/kgateway-dev/kgateway/v2/pkg/agentgateway/plugins"
 	"github.com/kgateway-dev/kgateway/v2/pkg/client/clientset/versioned"
 	"github.com/kgateway-dev/kgateway/v2/pkg/deployer"
 	"github.com/kgateway-dev/kgateway/v2/pkg/logging"
@@ -65,6 +66,19 @@ func WithAgentGatewayClassName(name string) func(*setup) {
 func WithExtraPlugins(extraPlugins func(ctx context.Context, commoncol *common.CommonCollections) []sdk.Plugin) func(*setup) {
 	return func(s *setup) {
 		s.extraPlugins = extraPlugins
+	}
+}
+
+func WithExtraAgentgatewayPlugins(extraAgentgatewayPlugins func(ctx context.Context, agw *agentgatewayplugins.AgwCollections) []agentgatewayplugins.AgentgatewayPlugin) func(*setup) {
+	return func(s *setup) {
+		s.extraAgentgatewayPlugins = extraAgentgatewayPlugins
+	}
+}
+
+// WithLeaderElectionID sets the LeaderElectionID for the leader lease.
+func WithLeaderElectionID(id string) func(*setup) {
+	return func(s *setup) {
+		s.leaderElectionID = id
 	}
 }
 
@@ -118,20 +132,22 @@ func WithGlobalSettings(settings *settings.Settings) func(*setup) {
 }
 
 type setup struct {
-	gatewayControllerName  string
-	gatewayClassName       string
-	waypointClassName      string
-	agentGatewayClassName  string
-	extraPlugins           func(ctx context.Context, commoncol *common.CommonCollections) []sdk.Plugin
-	extraGatewayParameters func(cli client.Client, inputs *deployer.Inputs) []deployer.ExtraGatewayParameters
-	extraXDSCallbacks      xdsserver.Callbacks
-	xdsListener            net.Listener
-	restConfig             *rest.Config
-	ctrlMgrOptionsInitFunc func(context.Context) *ctrl.Options
+	gatewayControllerName    string
+	gatewayClassName         string
+	waypointClassName        string
+	agentGatewayClassName    string
+	extraPlugins             func(ctx context.Context, commoncol *common.CommonCollections) []sdk.Plugin
+	extraAgentgatewayPlugins func(ctx context.Context, agw *agentgatewayplugins.AgwCollections) []agentgatewayplugins.AgentgatewayPlugin
+	extraGatewayParameters   func(cli client.Client, inputs *deployer.Inputs) []deployer.ExtraGatewayParameters
+	extraXDSCallbacks        xdsserver.Callbacks
+	xdsListener              net.Listener
+	restConfig               *rest.Config
+	ctrlMgrOptionsInitFunc   func(context.Context) *ctrl.Options
 	// extra controller manager config, like adding registering additional controllers
 	extraManagerConfig []func(ctx context.Context, mgr manager.Manager, objectFilter kubetypes.DynamicObjectFilter) error
 	krtDebugger        *krt.DebugHandler
 	globalSettings     *settings.Settings
+	leaderElectionID   string
 }
 
 var _ Server = &setup{}
@@ -142,6 +158,7 @@ func New(opts ...func(*setup)) (*setup, error) {
 		gatewayClassName:      wellknown.DefaultGatewayClassName,
 		waypointClassName:     wellknown.DefaultWaypointClassName,
 		agentGatewayClassName: wellknown.DefaultAgentGatewayClassName,
+		leaderElectionID:      wellknown.LeaderElectionID,
 	}
 	for _, opt := range opts {
 		opt(s)
@@ -171,6 +188,8 @@ func New(opts ...func(*setup)) (*setup, error) {
 				Metrics: metricsserver.Options{
 					BindAddress: ":9092",
 				},
+				LeaderElection:   !s.globalSettings.DisableLeaderElection,
+				LeaderElectionID: s.leaderElectionID,
 			}
 		}
 	}
@@ -247,6 +266,14 @@ func (s *setup) Start(ctx context.Context) error {
 		return err
 	}
 
+	agwCollections, err := agentgatewayplugins.NewAgwCollections(
+		commoncol,
+	)
+	if err != nil {
+		slog.Error("error creating agw common collections", "error", err)
+		return err
+	}
+
 	for _, mgrCfgFunc := range s.extraManagerConfig {
 		err := mgrCfgFunc(ctx, mgr, commoncol.DiscoveryNamespacesFilter)
 		if err != nil {
@@ -256,7 +283,7 @@ func (s *setup) Start(ctx context.Context) error {
 
 	BuildKgatewayWithConfig(
 		ctx, mgr, s.gatewayControllerName, s.gatewayClassName, s.waypointClassName,
-		s.agentGatewayClassName, setupOpts, s.restConfig, istioClient, commoncol, uccBuilder, s.extraPlugins, s.extraGatewayParameters)
+		s.agentGatewayClassName, setupOpts, s.restConfig, istioClient, commoncol, agwCollections, uccBuilder, s.extraPlugins, s.extraAgentgatewayPlugins, s.extraGatewayParameters)
 
 	slog.Info("starting admin server")
 	go admin.RunAdminServer(ctx, setupOpts)
@@ -281,8 +308,10 @@ func BuildKgatewayWithConfig(
 	restConfig *rest.Config,
 	kubeClient istiokube.Client,
 	commonCollections *collections.CommonCollections,
+	agwCollections *agentgatewayplugins.AgwCollections,
 	uccBuilder krtcollections.UniquelyConnectedClientsBulider,
 	extraPlugins func(ctx context.Context, commoncol *common.CommonCollections) []sdk.Plugin,
+	extraAgentgatewayPlugins func(ctx context.Context, agw *agentgatewayplugins.AgwCollections) []agentgatewayplugins.AgentgatewayPlugin,
 	extraGatewayParameters func(cli client.Client, inputs *deployer.Inputs) []deployer.ExtraGatewayParameters,
 ) error {
 	slog.Info("creating krt collections")
@@ -304,6 +333,7 @@ func BuildKgatewayWithConfig(
 		WaypointGatewayClassName: waypointClassName,
 		AgentGatewayClassName:    agentGatewayClassName,
 		ExtraPlugins:             extraPlugins,
+		ExtraAgentgatewayPlugins: extraAgentgatewayPlugins,
 		ExtraGatewayParameters:   extraGatewayParameters,
 		RestConfig:               restConfig,
 		SetupOpts:                setupOpts,
@@ -313,6 +343,7 @@ func BuildKgatewayWithConfig(
 		Dev:                      logging.MustGetLevel(logging.DefaultComponent) <= logging.LevelTrace,
 		KrtOptions:               krtOpts,
 		CommonCollections:        commonCollections,
+		AgwCollections:           agwCollections,
 	})
 	if err != nil {
 		slog.Error("failed initializing controller: ", "error", err)

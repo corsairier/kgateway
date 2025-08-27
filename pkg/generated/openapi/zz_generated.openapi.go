@@ -20,6 +20,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.AIPolicy":                                  schema_kgateway_v2_api_v1alpha1_AIPolicy(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.AIPromptEnrichment":                        schema_kgateway_v2_api_v1alpha1_AIPromptEnrichment(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.AIPromptGuard":                             schema_kgateway_v2_api_v1alpha1_AIPromptGuard(ref),
+		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.AWSGuardrailConfig":                        schema_kgateway_v2_api_v1alpha1_AWSGuardrailConfig(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.AccessLog":                                 schema_kgateway_v2_api_v1alpha1_AccessLog(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.AccessLogFilter":                           schema_kgateway_v2_api_v1alpha1_AccessLogFilter(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.AccessLogGrpcService":                      schema_kgateway_v2_api_v1alpha1_AccessLogGrpcService(ref),
@@ -43,6 +44,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.BackendSpec":                               schema_kgateway_v2_api_v1alpha1_BackendSpec(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.BackendStatus":                             schema_kgateway_v2_api_v1alpha1_BackendStatus(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.BackoffStrategy":                           schema_kgateway_v2_api_v1alpha1_BackoffStrategy(ref),
+		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.BedrockConfig":                             schema_kgateway_v2_api_v1alpha1_BedrockConfig(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.BodyTransformation":                        schema_kgateway_v2_api_v1alpha1_BodyTransformation(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Buffer":                                    schema_kgateway_v2_api_v1alpha1_Buffer(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.BufferSettings":                            schema_kgateway_v2_api_v1alpha1_BufferSettings(ref),
@@ -96,6 +98,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.HashPolicy":                                schema_kgateway_v2_api_v1alpha1_HashPolicy(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Header":                                    schema_kgateway_v2_api_v1alpha1_Header(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.HeaderFilter":                              schema_kgateway_v2_api_v1alpha1_HeaderFilter(ref),
+		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.HeaderModifiers":                           schema_kgateway_v2_api_v1alpha1_HeaderModifiers(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.HeaderTransformation":                      schema_kgateway_v2_api_v1alpha1_HeaderTransformation(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.HeaderValue":                               schema_kgateway_v2_api_v1alpha1_HeaderValue(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.HealthCheck":                               schema_kgateway_v2_api_v1alpha1_HealthCheck(ref),
@@ -120,6 +123,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.LocalPolicyTargetReference":                schema_kgateway_v2_api_v1alpha1_LocalPolicyTargetReference(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.LocalPolicyTargetReferenceWithSectionName": schema_kgateway_v2_api_v1alpha1_LocalPolicyTargetReferenceWithSectionName(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.LocalPolicyTargetSelector":                 schema_kgateway_v2_api_v1alpha1_LocalPolicyTargetSelector(ref),
+		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.LocalPolicyTargetSelectorWithSectionName":  schema_kgateway_v2_api_v1alpha1_LocalPolicyTargetSelectorWithSectionName(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.LocalRateLimitPolicy":                      schema_kgateway_v2_api_v1alpha1_LocalRateLimitPolicy(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.MCP":                                       schema_kgateway_v2_api_v1alpha1_MCP(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.McpSelector":                               schema_kgateway_v2_api_v1alpha1_McpSelector(ref),
@@ -130,10 +134,12 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.MetadataPathSegment":                       schema_kgateway_v2_api_v1alpha1_MetadataPathSegment(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Moderation":                                schema_kgateway_v2_api_v1alpha1_Moderation(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.MultiPoolConfig":                           schema_kgateway_v2_api_v1alpha1_MultiPoolConfig(ref),
+		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.NamespacedObjectReference":                 schema_kgateway_v2_api_v1alpha1_NamespacedObjectReference(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.OTelTracesSampler":                         schema_kgateway_v2_api_v1alpha1_OTelTracesSampler(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.OpenAIConfig":                              schema_kgateway_v2_api_v1alpha1_OpenAIConfig(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.OpenTelemetryAccessLogService":             schema_kgateway_v2_api_v1alpha1_OpenTelemetryAccessLogService(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.OpenTelemetryTracingConfig":                schema_kgateway_v2_api_v1alpha1_OpenTelemetryTracingConfig(ref),
+		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.OutlierDetection":                          schema_kgateway_v2_api_v1alpha1_OutlierDetection(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Parameters":                                schema_kgateway_v2_api_v1alpha1_Parameters(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.PathOverride":                              schema_kgateway_v2_api_v1alpha1_PathOverride(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Pod":                                       schema_kgateway_v2_api_v1alpha1_Pod(ref),
@@ -146,6 +152,8 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.PromptguardRequest":                        schema_kgateway_v2_api_v1alpha1_PromptguardRequest(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.PromptguardResponse":                       schema_kgateway_v2_api_v1alpha1_PromptguardResponse(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.ProxyDeployment":                           schema_kgateway_v2_api_v1alpha1_ProxyDeployment(ref),
+		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.RBAC":                                      schema_kgateway_v2_api_v1alpha1_RBAC(ref),
+		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.RBACPolicy":                                schema_kgateway_v2_api_v1alpha1_RBACPolicy(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.RateLimit":                                 schema_kgateway_v2_api_v1alpha1_RateLimit(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.RateLimitDescriptor":                       schema_kgateway_v2_api_v1alpha1_RateLimitDescriptor(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.RateLimitDescriptorEntry":                  schema_kgateway_v2_api_v1alpha1_RateLimitDescriptorEntry(ref),
@@ -156,6 +164,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.RegexMatch":                                schema_kgateway_v2_api_v1alpha1_RegexMatch(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.ResourceDetector":                          schema_kgateway_v2_api_v1alpha1_ResourceDetector(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.ResponseFlagFilter":                        schema_kgateway_v2_api_v1alpha1_ResponseFlagFilter(ref),
+		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Retry":                                     schema_kgateway_v2_api_v1alpha1_Retry(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.RetryPolicy":                               schema_kgateway_v2_api_v1alpha1_RetryPolicy(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Sampler":                                   schema_kgateway_v2_api_v1alpha1_Sampler(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.SdsBootstrap":                              schema_kgateway_v2_api_v1alpha1_SdsBootstrap(ref),
@@ -174,6 +183,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.TCPKeepalive":                              schema_kgateway_v2_api_v1alpha1_TCPKeepalive(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.TLS":                                       schema_kgateway_v2_api_v1alpha1_TLS(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.TLSFiles":                                  schema_kgateway_v2_api_v1alpha1_TLSFiles(ref),
+		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Timeouts":                                  schema_kgateway_v2_api_v1alpha1_Timeouts(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.TokenBucket":                               schema_kgateway_v2_api_v1alpha1_TokenBucket(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Tracing":                                   schema_kgateway_v2_api_v1alpha1_Tracing(ref),
 		"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.TracingProvider":                           schema_kgateway_v2_api_v1alpha1_TracingProvider(ref),
@@ -626,7 +636,7 @@ func schema_kgateway_v2_api_v1alpha1_AIPolicy(ref common.ReferenceCallback) comm
 					},
 					"routeType": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The type of route to the LLM provider API. Currently, `CHAT` and `CHAT_STREAMING` are supported.",
+							Description: "The type of route to the LLM provider API. Currently, `CHAT` and `CHAT_STREAMING` are supported. Note: This field is not applicable when using agentgateway",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -706,6 +716,35 @@ func schema_kgateway_v2_api_v1alpha1_AIPromptGuard(ref common.ReferenceCallback)
 		},
 		Dependencies: []string{
 			"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.PromptguardRequest", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.PromptguardResponse"},
+	}
+}
+
+func schema_kgateway_v2_api_v1alpha1_AWSGuardrailConfig(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"identifier": {
+						SchemaProps: spec.SchemaProps{
+							Description: "GuardrailIdentifier is the identifier of the Guardrail policy to use for the backend.",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"version": {
+						SchemaProps: spec.SchemaProps{
+							Description: "GuardrailVersion is the version of the Guardrail policy to use for the backend.",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"identifier", "version"},
+			},
+		},
 	}
 }
 
@@ -1008,6 +1047,13 @@ func schema_kgateway_v2_api_v1alpha1_AgentGateway(ref common.ReferenceCallback) 
 									},
 								},
 							},
+						},
+					},
+					"customConfigMapName": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Name of the custom configmap to use instead of the default generated one. When set, the agent gateway will use this configmap instead of creating the default one. The configmap must contain a 'config.yaml' key with the agent gateway configuration.",
+							Type:        []string{"string"},
+							Format:      "",
 						},
 					},
 				},
@@ -1694,11 +1740,17 @@ func schema_kgateway_v2_api_v1alpha1_BackendConfigPolicySpec(ref common.Referenc
 							Ref:         ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.HealthCheck"),
 						},
 					},
+					"outlierDetection": {
+						SchemaProps: spec.SchemaProps{
+							Description: "OutlierDetection contains the options necessary to configure passive health checking.",
+							Ref:         ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.OutlierDetection"),
+						},
+					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.CommonHttpProtocolOptions", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.HealthCheck", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Http1ProtocolOptions", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Http2ProtocolOptions", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.LoadBalancer", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.LocalPolicyTargetReference", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.LocalPolicyTargetSelector", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.TCPKeepalive", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.TLS", "k8s.io/apimachinery/pkg/apis/meta/v1.Duration"},
+			"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.CommonHttpProtocolOptions", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.HealthCheck", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Http1ProtocolOptions", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Http2ProtocolOptions", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.LoadBalancer", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.LocalPolicyTargetReference", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.LocalPolicyTargetSelector", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.OutlierDetection", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.TCPKeepalive", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.TLS", "k8s.io/apimachinery/pkg/apis/meta/v1.Duration"},
 	}
 }
 
@@ -1882,6 +1934,48 @@ func schema_kgateway_v2_api_v1alpha1_BackoffStrategy(ref common.ReferenceCallbac
 		},
 		Dependencies: []string{
 			"k8s.io/apimachinery/pkg/apis/meta/v1.Duration"},
+	}
+}
+
+func schema_kgateway_v2_api_v1alpha1_BedrockConfig(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"auth": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Auth specifies an explicit AWS authentication method for the backend. When omitted, the following credential providers are tried in order, stopping when one of them returns an access key ID and a secret access key (the session token is optional): 1. Environment variables: when the environment variables AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_SESSION_TOKEN are set. 2. AssumeRoleWithWebIdentity API call: when the environment variables AWS_WEB_IDENTITY_TOKEN_FILE and AWS_ROLE_ARN are set. 3. EKS Pod Identity: when the environment variable AWS_CONTAINER_AUTHORIZATION_TOKEN_FILE is set.\n\nSee the Envoy docs for more info: https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/aws_request_signing_filter#credentials",
+							Ref:         ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.AwsAuth"),
+						},
+					},
+					"model": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The model field is the supported model id published by AWS. See <https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html>",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"region": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Region is the AWS region to use for the backend. Defaults to us-east-1 if not specified.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"guardrail": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Guardrail configures the Guardrail policy to use for the backend. See <https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html> If not specified, the AWS Guardrail policy will not be used.",
+							Ref:         ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.AWSGuardrailConfig"),
+						},
+					},
+				},
+				Required: []string{"model"},
+			},
+		},
+		Dependencies: []string{
+			"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.AWSGuardrailConfig", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.AwsAuth"},
 	}
 }
 
@@ -2282,20 +2376,25 @@ func schema_kgateway_v2_api_v1alpha1_Cookie(ref common.ReferenceCallback) common
 							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
 						},
 					},
-					"attributes": {
+					"secure": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Attributes are additional attributes for the cookie.",
-							Type:        []string{"object"},
-							AdditionalProperties: &spec.SchemaOrBool{
-								Allows: true,
-								Schema: &spec.Schema{
-									SchemaProps: spec.SchemaProps{
-										Default: "",
-										Type:    []string{"string"},
-										Format:  "",
-									},
-								},
-							},
+							Description: "Secure specifies whether the cookie is secure. If true, the cookie will only be sent over HTTPS.",
+							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
+					"httpOnly": {
+						SchemaProps: spec.SchemaProps{
+							Description: "HttpOnly specifies whether the cookie is HTTP only, i.e. not accessible to JavaScript.",
+							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
+					"sameSite": {
+						SchemaProps: spec.SchemaProps{
+							Description: "SameSite controls cross-site sending of cookies. Supported values are Strict, Lax, and None.",
+							Type:        []string{"string"},
+							Format:      "",
 						},
 					},
 				},
@@ -2970,8 +3069,8 @@ func schema_kgateway_v2_api_v1alpha1_ExtAuthPolicy(ref common.ReferenceCallback)
 				Properties: map[string]spec.Schema{
 					"extensionRef": {
 						SchemaProps: spec.SchemaProps{
-							Description: "ExtensionRef references the ExternalExtension that should be used for authentication.",
-							Ref:         ref("k8s.io/api/core/v1.LocalObjectReference"),
+							Description: "ExtensionRef references the GatewayExtension that should be used for authentication.",
+							Ref:         ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.NamespacedObjectReference"),
 						},
 					},
 					"withRequestBody": {
@@ -3006,7 +3105,7 @@ func schema_kgateway_v2_api_v1alpha1_ExtAuthPolicy(ref common.ReferenceCallback)
 			},
 		},
 		Dependencies: []string{
-			"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.BufferSettings", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.PolicyDisable", "k8s.io/api/core/v1.LocalObjectReference"},
+			"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.BufferSettings", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.NamespacedObjectReference", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.PolicyDisable"},
 	}
 }
 
@@ -3071,7 +3170,7 @@ func schema_kgateway_v2_api_v1alpha1_ExtProcPolicy(ref common.ReferenceCallback)
 					"extensionRef": {
 						SchemaProps: spec.SchemaProps{
 							Description: "ExtensionRef references the GatewayExtension that should be used for external processing.",
-							Ref:         ref("k8s.io/api/core/v1.LocalObjectReference"),
+							Ref:         ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.NamespacedObjectReference"),
 						},
 					},
 					"processingMode": {
@@ -3090,7 +3189,7 @@ func schema_kgateway_v2_api_v1alpha1_ExtProcPolicy(ref common.ReferenceCallback)
 			},
 		},
 		Dependencies: []string{
-			"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.PolicyDisable", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.ProcessingMode", "k8s.io/api/core/v1.LocalObjectReference"},
+			"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.NamespacedObjectReference", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.PolicyDisable", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.ProcessingMode"},
 	}
 }
 
@@ -3657,7 +3756,8 @@ func schema_kgateway_v2_api_v1alpha1_HTTPListenerPolicy(ref common.ReferenceCall
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Type: []string{"object"},
+				Description: "HTTPListenerPolicy is intended to be used for configuring the Envoy `HttpConnectionManager` and any other config or policy that should map 1-to-1 with a given HTTP listener, such as the Envoy health check HTTP filter. Currently these policies can only be applied per `Gateway` but support for `Listener` attachment may be added in the future. See https://github.com/kgateway-dev/kgateway/issues/11786 for more details.",
+				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
 						SchemaProps: spec.SchemaProps{
@@ -3810,7 +3910,7 @@ func schema_kgateway_v2_api_v1alpha1_HTTPListenerPolicySpec(ref common.Reference
 					},
 					"useRemoteAddress": {
 						SchemaProps: spec.SchemaProps{
-							Description: "UseRemoteAddress determines whether to use the remote address for the original client. When true, Envoy will use the remote address of the connection as the client address. When false, Envoy will use the X-Forwarded-For header to determine the client address. See here for more information: https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/network/http_connection_manager/v3/http_connection_manager.proto#envoy-v3-api-field-extensions-filters-network-http-connection-manager-v3-httpconnectionmanager-use-remote-address",
+							Description: "UseRemoteAddress determines whether to use the remote address for the original client. Note: If this field is omitted, it will fallback to the default value of 'true', which we set for all Envoy HCMs. Thus, setting this explicitly to true is unnecessary (but will not cause any harm). When true, Envoy will use the remote address of the connection as the client address. When false, Envoy will use the X-Forwarded-For header to determine the client address. See here for more information: https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/network/http_connection_manager/v3/http_connection_manager.proto#envoy-v3-api-field-extensions-filters-network-http-connection-manager-v3-httpconnectionmanager-use-remote-address",
 							Type:        []string{"boolean"},
 							Format:      "",
 						},
@@ -3845,6 +3945,20 @@ func schema_kgateway_v2_api_v1alpha1_HTTPListenerPolicySpec(ref common.Reference
 						SchemaProps: spec.SchemaProps{
 							Description: "PreserveHttp1HeaderCase determines whether to preserve the case of HTTP1 request headers. See here for more information: https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_conn_man/header_casing",
 							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
+					"acceptHttp10": {
+						SchemaProps: spec.SchemaProps{
+							Description: "AcceptHTTP10 determines whether to accept incoming HTTP/1.0 and HTTP 0.9 requests. See here for more information: https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/core/v3/protocol.proto#config-core-v3-http1protocoloptions",
+							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
+					"defaultHostForHttp10": {
+						SchemaProps: spec.SchemaProps{
+							Description: "DefaultHostForHttp10 specifies a default host for HTTP/1.0 requests. This is highly suggested if acceptHttp10 is true and a no-op if acceptHttp10 is false. See here for more information: https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/core/v3/protocol.proto#config-core-v3-http1protocoloptions",
+							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
@@ -3935,6 +4049,33 @@ func schema_kgateway_v2_api_v1alpha1_HeaderFilter(ref common.ReferenceCallback) 
 		},
 		Dependencies: []string{
 			"sigs.k8s.io/gateway-api/apis/v1.HTTPHeaderMatch"},
+	}
+}
+
+func schema_kgateway_v2_api_v1alpha1_HeaderModifiers(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "HeaderModifiers can be used to define the policy to modify request and response headers.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"request": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Request modifies request headers.",
+							Ref:         ref("sigs.k8s.io/gateway-api/apis/v1.HTTPHeaderFilter"),
+						},
+					},
+					"response": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Response modifies response headers.",
+							Ref:         ref("sigs.k8s.io/gateway-api/apis/v1.HTTPHeaderFilter"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"sigs.k8s.io/gateway-api/apis/v1.HTTPHeaderFilter"},
 	}
 }
 
@@ -4504,7 +4645,8 @@ func schema_kgateway_v2_api_v1alpha1_LLMProvider(ref common.ReferenceCallback) c
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Type: []string{"object"},
+				Description: "LLMProvider specifies the target large language model provider that the backend should route requests to.",
+				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"provider": {
 						SchemaProps: spec.SchemaProps{
@@ -4653,9 +4795,24 @@ func schema_kgateway_v2_api_v1alpha1_LoadBalancerMaglevConfig(ref common.Referen
 							Format:      "",
 						},
 					},
+					"hashPolicies": {
+						SchemaProps: spec.SchemaProps{
+							Description: "HashPolicies specifies the hash policies for hashing load balancers (RingHash, Maglev).",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.HashPolicy"),
+									},
+								},
+							},
+						},
+					},
 				},
 			},
 		},
+		Dependencies: []string{
+			"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.HashPolicy"},
 	}
 }
 
@@ -4697,9 +4854,24 @@ func schema_kgateway_v2_api_v1alpha1_LoadBalancerRingHashConfig(ref common.Refer
 							Format:      "",
 						},
 					},
+					"hashPolicies": {
+						SchemaProps: spec.SchemaProps{
+							Description: "HashPolicies specifies the hash policies for hashing load balancers (RingHash, Maglev).",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.HashPolicy"),
+									},
+								},
+							},
+						},
+					},
 				},
 			},
 		},
+		Dependencies: []string{
+			"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.HashPolicy"},
 	}
 }
 
@@ -4811,7 +4983,7 @@ func schema_kgateway_v2_api_v1alpha1_LocalPolicyTargetSelector(ref common.Refere
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Select the object to attach the policy by Group, Kind, and its labels. The object must be in the same namespace as the policy and match the specified labels.",
+				Description: "LocalPolicyTargetSelector selects the object to attach the policy by Group, Kind, and MatchLabels. The object must be in the same namespace as the policy and match the specified labels. Do not use targetSelectors when reconciliation times are critical, especially if you have a large number of policies that target the same resource. Instead, use targetRefs to attach the policy.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"group": {
@@ -4844,6 +5016,59 @@ func schema_kgateway_v2_api_v1alpha1_LocalPolicyTargetSelector(ref common.Refere
 									},
 								},
 							},
+						},
+					},
+				},
+				Required: []string{"group", "kind", "matchLabels"},
+			},
+		},
+	}
+}
+
+func schema_kgateway_v2_api_v1alpha1_LocalPolicyTargetSelectorWithSectionName(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "LocalPolicyTargetSelectorWithSectionName the object to attach the policy by Group, Kind, MatchLabels, and optionally SectionName. The object must be in the same namespace as the policy and match the specified labels. Do not use targetSelectors when reconciliation times are critical, especially if you have a large number of policies that target the same resource. Instead, use targetRefs to attach the policy.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"group": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The API group of the target resource. For Kubernetes Gateway API resources, the group is `gateway.networking.k8s.io`.",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The API kind of the target resource, such as Gateway or HTTPRoute.",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"matchLabels": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Label selector to select the target resource.",
+							Type:        []string{"object"},
+							AdditionalProperties: &spec.SchemaOrBool{
+								Allows: true,
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: "",
+										Type:    []string{"string"},
+										Format:  "",
+									},
+								},
+							},
+						},
+					},
+					"sectionName": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The section name of the target resource.",
+							Type:        []string{"string"},
+							Format:      "",
 						},
 					},
 				},
@@ -4958,6 +5183,13 @@ func schema_kgateway_v2_api_v1alpha1_McpTarget(ref common.ReferenceCallback) com
 						SchemaProps: spec.SchemaProps{
 							Description: "Host is the hostname or IP address of the MCP target.",
 							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"path": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Path is the URL path of the MCP target endpoint. Defaults to \"/sse\" for SSE protocol or \"/mcp\" for StreamableHTTP protocol if not specified.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -5152,6 +5384,35 @@ func schema_kgateway_v2_api_v1alpha1_MultiPoolConfig(ref common.ReferenceCallbac
 	}
 }
 
+func schema_kgateway_v2_api_v1alpha1_NamespacedObjectReference(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "Select the object by Name and Namespace. You can target only one object at a time.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"name": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The name of the target resource.",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"namespace": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The namespace of the target resource. If not set, defaults to the namespace of the parent object.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"name"},
+			},
+		},
+	}
+}
+
 func schema_kgateway_v2_api_v1alpha1_OTelTracesSampler(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
@@ -5243,6 +5504,12 @@ func schema_kgateway_v2_api_v1alpha1_OpenTelemetryAccessLogService(ref common.Re
 							Ref:         ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.KeyAnyValueList"),
 						},
 					},
+					"resourceAttributes": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Additional resource attributes that describe the resource. If the `service.name` resource attribute is not specified, it adds it with the default value of the envoy cluster name, ie: `<gateway-name>.<gateway-namespace>`",
+							Ref:         ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.KeyAnyValueList"),
+						},
+					},
 				},
 				Required: []string{"grpcService"},
 			},
@@ -5268,8 +5535,7 @@ func schema_kgateway_v2_api_v1alpha1_OpenTelemetryTracingConfig(ref common.Refer
 					},
 					"serviceName": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The name for the service. This will be populated in the ResourceSpan Resource attributes",
-							Default:     "",
+							Description: "The name for the service. This will be populated in the ResourceSpan Resource attributes Defaults to the envoy cluster name. Ie: `<gateway-name>.<gateway-namespace>`",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -5295,11 +5561,52 @@ func schema_kgateway_v2_api_v1alpha1_OpenTelemetryTracingConfig(ref common.Refer
 						},
 					},
 				},
-				Required: []string{"grpcService", "serviceName"},
+				Required: []string{"grpcService"},
 			},
 		},
 		Dependencies: []string{
 			"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.CommonGrpcService", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.ResourceDetector", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Sampler"},
+	}
+}
+
+func schema_kgateway_v2_api_v1alpha1_OutlierDetection(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "OutlierDetection contains the options to configure passive health checks. See [Envoy documentation](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier#outlier-detection) for more details.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"consecutive5xx": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The number of consecutive server-side error responses (for HTTP traffic, 5xx responses; for TCP traffic, connection failures; etc.) before an ejection occurs. Defaults to 5. If this is zero, consecutive 5xx passive health checks will be disabled. In the future, other types of passive health checking might be added, but none will be enabled by default.",
+							Type:        []string{"integer"},
+							Format:      "int64",
+						},
+					},
+					"interval": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The time interval between ejection analysis sweeps. This can result in both new ejections as well as hosts being returned to service. Defaults to 10s.",
+							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+						},
+					},
+					"baseEjectionTime": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The base time that a host is ejected for. The real time is equal to the base time multiplied by the number of times the host has been ejected. Defaults to 30s.",
+							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+						},
+					},
+					"maxEjectionPercent": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The maximum % of an upstream cluster that can be ejected due to outlier detection. Defaults to 10%.",
+							Type:        []string{"integer"},
+							Format:      "int64",
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.Duration"},
 	}
 }
 
@@ -5787,7 +6094,7 @@ func schema_kgateway_v2_api_v1alpha1_PromptguardResponse(ref common.ReferenceCal
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "PromptguardResponse configures the response that the prompt guard applies to responses returned by the LLM provider. Both webhook and regex can be set, they will be executed in the following order: webhook → regex, where each step can reject the request and stop further processing.",
+				Description: "PromptguardResponse configures the response that the prompt guard applies to responses returned by the LLM provider. Both webhook and regex can be set, they will be executed in the following order: webhook → regex, where each step can reject the request and stop further processing. Note: This is not yet supported for agentgateway.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"regex": {
@@ -5822,6 +6129,71 @@ func schema_kgateway_v2_api_v1alpha1_ProxyDeployment(ref common.ReferenceCallbac
 							Description: "The number of desired pods. Defaults to 1.",
 							Type:        []string{"integer"},
 							Format:      "int64",
+						},
+					},
+					"omitReplicas": {
+						SchemaProps: spec.SchemaProps{
+							Description: "If true, replicas will not be set in the deployment (allowing HPA to control scaling)",
+							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func schema_kgateway_v2_api_v1alpha1_RBAC(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "RBAC defines the configuration for role-based access control.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"policy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Policy specifies the RBAC rule to evaluate. A policy matches only **all** the conditions evaluates to true.",
+							Default:     map[string]interface{}{},
+							Ref:         ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.RBACPolicy"),
+						},
+					},
+					"action": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Action defines whether the rule allows or denies the request if matched. If unspecified, the default is \"Allow\".",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"policy"},
+			},
+		},
+		Dependencies: []string{
+			"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.RBACPolicy"},
+	}
+}
+
+func schema_kgateway_v2_api_v1alpha1_RBACPolicy(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "RBACPolicy defines a single RBAC rule.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"matchExpressions": {
+						SchemaProps: spec.SchemaProps{
+							Description: "MatchExpressions defines a set of conditions that must be satisfied for the rule to match. These expression should be in the form of a Common Expression Language (CEL) expression. See: https://www.envoyproxy.io/docs/envoy/latest/xds/type/matcher/v3/cel.proto",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: "",
+										Type:    []string{"string"},
+										Format:  "",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -5978,7 +6350,8 @@ func schema_kgateway_v2_api_v1alpha1_RateLimitPolicy(ref common.ReferenceCallbac
 					"extensionRef": {
 						SchemaProps: spec.SchemaProps{
 							Description: "ExtensionRef references a GatewayExtension that provides the global rate limit service.",
-							Ref:         ref("k8s.io/api/core/v1.LocalObjectReference"),
+							Default:     map[string]interface{}{},
+							Ref:         ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.NamespacedObjectReference"),
 						},
 					},
 				},
@@ -5986,7 +6359,7 @@ func schema_kgateway_v2_api_v1alpha1_RateLimitPolicy(ref common.ReferenceCallbac
 			},
 		},
 		Dependencies: []string{
-			"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.RateLimitDescriptor", "k8s.io/api/core/v1.LocalObjectReference"},
+			"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.NamespacedObjectReference", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.RateLimitDescriptor"},
 	}
 }
 
@@ -6156,6 +6529,70 @@ func schema_kgateway_v2_api_v1alpha1_ResponseFlagFilter(ref common.ReferenceCall
 				Required: []string{"flags"},
 			},
 		},
+	}
+}
+
+func schema_kgateway_v2_api_v1alpha1_Retry(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "Retry defines the retry policy",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"retryOn": {
+						SchemaProps: spec.SchemaProps{
+							Description: "RetryOn specifies the conditions under which a retry should be attempted.",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: "",
+										Type:    []string{"string"},
+										Format:  "",
+									},
+								},
+							},
+						},
+					},
+					"attempts": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Attempts specifies the number of retry attempts for a request. Defaults to 1 attempt if not set. A value of 0 effectively disables retries.",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"perTryTimeout": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PerTryTimeout specifies the timeout per retry attempt (incliding the initial attempt). If a global timeout is configured on a route, this timeout must be less than the global route timeout. It is specified as a sequence of decimal numbers, each with optional fraction and a unit suffix, such as \"1s\" or \"500ms\".",
+							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+						},
+					},
+					"statusCodes": {
+						SchemaProps: spec.SchemaProps{
+							Description: "StatusCodes specifies the HTTP status codes in the range 400-599 that should be retried in addition to the conditions specified in RetryOn.",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: 0,
+										Type:    []string{"integer"},
+										Format:  "int32",
+									},
+								},
+							},
+						},
+					},
+					"backoffBaseInterval": {
+						SchemaProps: spec.SchemaProps{
+							Description: "BackoffBaseInterval specifies the base interval used with a fully jittered exponential back-off between retries. Defaults to 25ms if not set. Given a backoff base interval B and retry number N, the back-off for the retry is in the range [0, (2^N-1)*B]. The backoff interval is capped at a max of 10 times the base interval. E.g., given a value of 25ms, the first retry will be delayed randomly by 0-24ms, the 2nd by 0-74ms, the 3rd by 0-174ms, and so on, and capped to a max of 10 times the base interval (250ms).",
+							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.Duration"},
 	}
 }
 
@@ -6342,6 +6779,13 @@ func schema_kgateway_v2_api_v1alpha1_Service(ref common.ReferenceCallback) commo
 									},
 								},
 							},
+						},
+					},
+					"externalTrafficPolicy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ExternalTrafficPolicy defines the external traffic policy for the service. Valid values are Cluster and Local. Default value is Cluster.",
+							Type:        []string{"string"},
+							Format:      "",
 						},
 					},
 				},
@@ -6671,11 +7115,16 @@ func schema_kgateway_v2_api_v1alpha1_SupportedLLMProvider(ref common.ReferenceCa
 							Ref: ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.VertexAIConfig"),
 						},
 					},
+					"bedrock": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.BedrockConfig"),
+						},
+					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.AnthropicConfig", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.AzureOpenAIConfig", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.GeminiConfig", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.OpenAIConfig", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.VertexAIConfig"},
+			"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.AnthropicConfig", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.AzureOpenAIConfig", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.BedrockConfig", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.GeminiConfig", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.OpenAIConfig", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.VertexAIConfig"},
 	}
 }
 
@@ -6830,6 +7279,32 @@ func schema_kgateway_v2_api_v1alpha1_TLSFiles(ref common.ReferenceCallback) comm
 				},
 			},
 		},
+	}
+}
+
+func schema_kgateway_v2_api_v1alpha1_Timeouts(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"request": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Request specifies a timeout for an individual request from the gateway to a backend. This spans between the point at which the entire downstream request (i.e. end-of-stream) has been processed and when the backend response has been completely processed. A value of 0 effectively disables the timeout. It is specified as a sequence of decimal numbers, each with optional fraction and a unit suffix, such as \"1s\" or \"500ms\".",
+							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+						},
+					},
+					"streamIdle": {
+						SchemaProps: spec.SchemaProps{
+							Description: "StreamIdle specifies a timeout for a requests' idle streams. A value of 0 effectively disables the timeout.",
+							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.Duration"},
 	}
 }
 
@@ -7068,7 +7543,7 @@ func schema_kgateway_v2_api_v1alpha1_TrafficPolicySpec(ref common.ReferenceCallb
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "TrafficPolicySpec defines the desired state of a traffic policy.",
+				Description: "TrafficPolicySpec defines the desired state of a traffic policy. Note: Backend attachment is only supported for agentgateway.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"targetRefs": {
@@ -7093,7 +7568,7 @@ func schema_kgateway_v2_api_v1alpha1_TrafficPolicySpec(ref common.ReferenceCallb
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
 										Default: map[string]interface{}{},
-										Ref:     ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.LocalPolicyTargetSelector"),
+										Ref:     ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.LocalPolicyTargetSelectorWithSectionName"),
 									},
 								},
 							},
@@ -7141,17 +7616,10 @@ func schema_kgateway_v2_api_v1alpha1_TrafficPolicySpec(ref common.ReferenceCallb
 							Ref:         ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.CSRFPolicy"),
 						},
 					},
-					"hashPolicies": {
+					"headerModifiers": {
 						SchemaProps: spec.SchemaProps{
-							Description: "HashPolicies specifies the hash policies for hashing load balancers (RingHash, Maglev). Should be used in conjunction with Load Balancer on the BackendConfigPolicy. Note: can only be used when targeting routes.",
-							Type:        []string{"array"},
-							Items: &spec.SchemaOrArray{
-								Schema: &spec.Schema{
-									SchemaProps: spec.SchemaProps{
-										Ref: ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.HashPolicy"),
-									},
-								},
-							},
+							Description: "HeaderModifiers defines the policy to modify request and response headers.",
+							Ref:         ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.HeaderModifiers"),
 						},
 					},
 					"autoHostRewrite": {
@@ -7167,11 +7635,29 @@ func schema_kgateway_v2_api_v1alpha1_TrafficPolicySpec(ref common.ReferenceCallb
 							Ref:         ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Buffer"),
 						},
 					},
+					"timeouts": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Timeouts defines the timeouts for requests It is applicable to HTTPRoutes and ignored for other targeted kinds.",
+							Ref:         ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Timeouts"),
+						},
+					},
+					"retry": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Retry defines the policy for retrying requests. It is applicable to HTTPRoutes, Gateway listeners and XListenerSets, and ignored for other targeted kinds.",
+							Ref:         ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Retry"),
+						},
+					},
+					"rbac": {
+						SchemaProps: spec.SchemaProps{
+							Description: "RBAC specifies the role-based access control configuration for the policy. This defines the rules for authorization based on roles and permissions.",
+							Ref:         ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.RBAC"),
+						},
+					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.AIPolicy", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Buffer", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.CSRFPolicy", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.CorsPolicy", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.ExtAuthPolicy", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.ExtProcPolicy", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.HashPolicy", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.LocalPolicyTargetReferenceWithSectionName", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.LocalPolicyTargetSelector", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.RateLimit", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.TransformationPolicy"},
+			"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.AIPolicy", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Buffer", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.CSRFPolicy", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.CorsPolicy", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.ExtAuthPolicy", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.ExtProcPolicy", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.HeaderModifiers", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.LocalPolicyTargetReferenceWithSectionName", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.LocalPolicyTargetSelectorWithSectionName", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.RBAC", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.RateLimit", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Retry", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Timeouts", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.TransformationPolicy"},
 	}
 }
 
@@ -7394,14 +7880,14 @@ func schema_kgateway_v2_api_v1alpha1_Webhook(ref common.ReferenceCallback) commo
 				Properties: map[string]spec.Schema{
 					"host": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Host to send the traffic to. Note: TLS is not currently supported for webhook.",
+							Description: "Host to send the traffic to. Note: TLS is not currently supported for webhook. Example: ```yaml host:\n  host: example.com  #The host name of the webhook endpoint.\n  port: 443 \t        #The port number on which the webhook is listening.\n```",
 							Default:     map[string]interface{}{},
 							Ref:         ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.Host"),
 						},
 					},
 					"forwardHeaders": {
 						SchemaProps: spec.SchemaProps{
-							Description: "ForwardHeaders define headers to forward with the request to the webhook.",
+							Description: "ForwardHeaders define headers to forward with the request to the webhook. Note: This is not yet supported for agentgateway.",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{

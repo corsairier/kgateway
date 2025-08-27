@@ -23,6 +23,7 @@ type AIPolicy struct {
 	Defaults []FieldDefault `json:"defaults,omitempty"`
 
 	// The type of route to the LLM provider API. Currently, `CHAT` and `CHAT_STREAMING` are supported.
+	// Note: This field is not applicable when using agentgateway
 	// +kubebuilder:validation:Enum=CHAT;CHAT_STREAMING
 	// +kubebuilder:default=CHAT
 	RouteType *RouteType `json:"routeType,omitempty"`
@@ -142,10 +143,17 @@ type Regex struct {
 type Webhook struct {
 	// Host to send the traffic to.
 	// Note: TLS is not currently supported for webhook.
+	// Example:
+	// ```yaml
+	// host:
+	//   host: example.com  #The host name of the webhook endpoint.
+	//   port: 443 	        #The port number on which the webhook is listening.
+	// ```
 	// +required
 	Host Host `json:"host"`
 
 	// ForwardHeaders define headers to forward with the request to the webhook.
+	// Note: This is not yet supported for agentgateway.
 	ForwardHeaders []gwv1.HTTPHeaderMatch `json:"forwardHeaders,omitempty"`
 }
 
@@ -205,6 +213,7 @@ type PromptguardRequest struct {
 // PromptguardResponse configures the response that the prompt guard applies to responses returned by the LLM provider.
 // Both webhook and regex can be set, they will be executed in the following order: webhook → regex, where each step
 // can reject the request and stop further processing.
+// Note: This is not yet supported for agentgateway.
 type PromptguardResponse struct {
 	// Regular expression (regex) matching for prompt guards and data masking.
 	Regex *Regex `json:"regex,omitempty"`

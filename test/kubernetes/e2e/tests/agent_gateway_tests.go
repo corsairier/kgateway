@@ -3,11 +3,15 @@ package tests
 import (
 	"github.com/kgateway-dev/kgateway/v2/test/kubernetes/e2e"
 	"github.com/kgateway-dev/kgateway/v2/test/kubernetes/e2e/features/agentgateway"
+	"github.com/kgateway-dev/kgateway/v2/test/kubernetes/e2e/features/agentgateway/extauth"
+	"github.com/kgateway-dev/kgateway/v2/test/kubernetes/e2e/features/agentgateway/rbac"
 )
 
 func AgentGatewaySuiteRunner() e2e.SuiteRunner {
 	agentGatewaySuiteRunner := e2e.NewSuiteRunner(false)
-	agentGatewaySuiteRunner.Register("AgentGateway", agentgateway.NewTestingSuite)
+	agentGatewaySuiteRunner.Register("BasicRouting", agentgateway.NewTestingSuite)
+	agentGatewaySuiteRunner.Register("Extauth", extauth.NewTestingSuite)
+	agentGatewaySuiteRunner.Register("RBAC", rbac.NewTestingSuite)
 
 	return agentGatewaySuiteRunner
 }

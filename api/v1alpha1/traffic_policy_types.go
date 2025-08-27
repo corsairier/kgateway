@@ -1,7 +1,6 @@
 package v1alpha1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
@@ -36,21 +35,24 @@ type TrafficPolicyList struct {
 }
 
 // TrafficPolicySpec defines the desired state of a traffic policy.
-// +kubebuilder:validation:XValidation:rule="!has(self.hashPolicies) || ((has(self.targetRefs) && self.targetRefs.all(r, r.kind == 'HTTPRoute')) || (has(self.targetSelectors) && self.targetSelectors.all(r, r.kind == 'HTTPRoute')))",message="hash policies can only be used when targeting HTTPRoute resources"
+// Note: Backend attachment is only supported for agentgateway.
 // +kubebuilder:validation:XValidation:rule="!has(self.autoHostRewrite) || ((has(self.targetRefs) && self.targetRefs.all(r, r.kind == 'HTTPRoute')) || (has(self.targetSelectors) && self.targetSelectors.all(r, r.kind == 'HTTPRoute')))",message="autoHostRewrite can only be used when targeting HTTPRoute resources"
+// +kubebuilder:validation:XValidation:rule="has(self.retry) && has(self.timeouts) ? (has(self.retry.perTryTimeout) && has(self.timeouts.request) ? duration(self.retry.perTryTimeout) < duration(self.timeouts.request) : true) : true",message="retry.perTryTimeout must be lesser than timeouts.request"
+// +kubebuilder:validation:XValidation:rule="has(self.retry) && has(self.targetRefs) ? self.targetRefs.all(r, (r.kind == 'Gateway' ? has(r.sectionName) : true )) : true",message="targetRefs[].sectionName must be set when targeting Gateway resources with retry policy"
+// +kubebuilder:validation:XValidation:rule="has(self.retry) && has(self.targetSelectors) ? self.targetSelectors.all(r, (r.kind == 'Gateway' ? has(r.sectionName) : true )) : true",message="targetSelectors[].sectionName must be set when targeting Gateway resources with retry policy"
 type TrafficPolicySpec struct {
 	// TargetRefs specifies the target resources by reference to attach the policy to.
 	// +optional
 	//
 	// +kubebuilder:validation:MinItems=1
 	// +kubebuilder:validation:MaxItems=16
-	// +kubebuilder:validation:XValidation:rule="self.all(r, (r.kind == 'Gateway' || r.kind == 'HTTPRoute' || (r.kind == 'XListenerSet' && r.group == 'gateway.networking.x-k8s.io')) && (!has(r.group) || r.group == 'gateway.networking.k8s.io' || r.group == 'gateway.networking.x-k8s.io'))",message="targetRefs may only reference Gateway, HTTPRoute, or XListenerSet resources"
+	// +kubebuilder:validation:XValidation:rule="self.all(r, (r.kind == 'Backend' || r.kind == 'Gateway' || r.kind == 'HTTPRoute' || (r.kind == 'XListenerSet' && r.group == 'gateway.networking.x-k8s.io')) && (!has(r.group) || r.group == 'gateway.networking.k8s.io' || r.group == 'gateway.networking.x-k8s.io' || r.group == 'gateway.kgateway.dev' ))",message="targetRefs may only reference Gateway, HTTPRoute, XListenerSet, or Backend resources"
 	TargetRefs []LocalPolicyTargetReferenceWithSectionName `json:"targetRefs,omitempty"`
 
 	// TargetSelectors specifies the target selectors to select resources to attach the policy to.
 	// +optional
 	// +kubebuilder:validation:XValidation:rule="self.all(r, (r.kind == 'Gateway' || r.kind == 'HTTPRoute' || (r.kind == 'XListenerSet' && r.group == 'gateway.networking.x-k8s.io')) && (!has(r.group) || r.group == 'gateway.networking.k8s.io' || r.group == 'gateway.networking.x-k8s.io'))",message="targetSelectors may only reference Gateway, HTTPRoute, or XListenerSet resources"
-	TargetSelectors []LocalPolicyTargetSelector `json:"targetSelectors,omitempty"`
+	TargetSelectors []LocalPolicyTargetSelectorWithSectionName `json:"targetSelectors,omitempty"`
 
 	// AI is used to configure AI-based policies for the policy.
 	// +optional
@@ -83,13 +85,9 @@ type TrafficPolicySpec struct {
 	// +optional
 	Csrf *CSRFPolicy `json:"csrf,omitempty"`
 
-	// HashPolicies specifies the hash policies for hashing load balancers (RingHash, Maglev).
-	// Should be used in conjunction with Load Balancer on the BackendConfigPolicy.
-	// Note: can only be used when targeting routes.
+	// HeaderModifiers defines the policy to modify request and response headers.
 	// +optional
-	// +kubebuilder:validation:MinItems=1
-	// +kubebuilder:validation:MaxItems=16
-	HashPolicies []*HashPolicy `json:"hashPolicies,omitempty"`
+	HeaderModifiers *HeaderModifiers `json:"headerModifiers,omitempty"`
 
 	// AutoHostRewrite rewrites the Host header to the DNS name of the selected upstream.
 	// NOTE: This field is only honoured for HTTPRoute targets.
@@ -102,6 +100,21 @@ type TrafficPolicySpec struct {
 	// Requests exceeding this size will return a 413 response.
 	// +optional
 	Buffer *Buffer `json:"buffer,omitempty"`
+
+	// Timeouts defines the timeouts for requests
+	// It is applicable to HTTPRoutes and ignored for other targeted kinds.
+	// +optional
+	Timeouts *Timeouts `json:"timeouts,omitempty"`
+
+	// Retry defines the policy for retrying requests.
+	// It is applicable to HTTPRoutes, Gateway listeners and XListenerSets, and ignored for other targeted kinds.
+	// +optional
+	Retry *Retry `json:"retry,omitempty"`
+
+	// RBAC specifies the role-based access control configuration for the policy.
+	// This defines the rules for authorization based on roles and permissions.
+	// +optional
+	RBAC *RBAC `json:"rbac,omitempty"`
 }
 
 // TransformationPolicy config is used to modify envoy behavior at a route level.
@@ -199,9 +212,9 @@ type BodyTransformation struct {
 //
 // +kubebuilder:validation:ExactlyOneOf=extensionRef;disable
 type ExtAuthPolicy struct {
-	// ExtensionRef references the ExternalExtension that should be used for authentication.
+	// ExtensionRef references the GatewayExtension that should be used for authentication.
 	// +optional
-	ExtensionRef *corev1.LocalObjectReference `json:"extensionRef,omitempty"`
+	ExtensionRef *NamespacedObjectReference `json:"extensionRef,omitempty"`
 
 	// WithRequestBody allows the request body to be buffered and sent to the authorization service.
 	// Warning buffering has implications for streaming and therefore performance.
@@ -297,7 +310,7 @@ type RateLimitPolicy struct {
 
 	// ExtensionRef references a GatewayExtension that provides the global rate limit service.
 	// +required
-	ExtensionRef *corev1.LocalObjectReference `json:"extensionRef"`
+	ExtensionRef NamespacedObjectReference `json:"extensionRef"`
 }
 
 // RateLimitDescriptor defines a descriptor for rate limiting.
@@ -395,57 +408,17 @@ type CSRFPolicy struct {
 	AdditionalOrigins []StringMatcher `json:"additionalOrigins,omitempty"`
 }
 
-// +kubebuilder:validation:ExactlyOneOf=header;cookie;sourceIP
-type HashPolicy struct {
-	// Header specifies a header's value as a component of the hash key.
+// HeaderModifiers can be used to define the policy to modify request and response headers.
+// +kubebuilder:validation:XValidation:rule="has(self.request) || has(self.response)",message="At least one of request or response must be provided."
+type HeaderModifiers struct {
+	// Request modifies request headers.
 	// +optional
-	Header *Header `json:"header,omitempty"`
+	Request *gwv1.HTTPHeaderFilter `json:"request,omitempty"`
 
-	// Cookie specifies a given cookie as a component of the hash key.
+	// Response modifies response headers.
 	// +optional
-	Cookie *Cookie `json:"cookie,omitempty"`
-
-	// SourceIP specifies whether to use the request's source IP address as a component of the hash key.
-	// +optional
-	SourceIP *SourceIP `json:"sourceIP,omitempty"`
-
-	// Terminal, if set, and a hash key is available after evaluating this policy, will cause Envoy to skip the subsequent policies and
-	// use the key as it is.
-	// This is useful for defining "fallback" policies and limiting the time Envoy spends generating hash keys.
-	// +optional
-	Terminal *bool `json:"terminal,omitempty"`
+	Response *gwv1.HTTPHeaderFilter `json:"response,omitempty"`
 }
-
-type Header struct {
-	// Name is the name of the header to use as a component of the hash key.
-	// +kubebuilder:validation:MinLength=1
-	Name string `json:"name"`
-}
-
-type Cookie struct {
-	// Name of the cookie.
-	// +kubebuilder:validation:MinLength=1
-	Name string `json:"name"`
-
-	// Path is the name of the path for the cookie.
-	// +optional
-	Path *string `json:"path,omitempty"`
-
-	// TTL specifies the time to live of the cookie.
-	// If specified, a cookie with the TTL will be generated if the cookie is not present.
-	// If the TTL is present and zero, the generated cookie will be a session cookie.
-	// +optional
-	// +kubebuilder:validation:XValidation:rule="matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')",message="invalid duration value"
-	TTL *metav1.Duration `json:"ttl,omitempty"`
-
-	// Attributes are additional attributes for the cookie.
-	// +optional
-	// +kubebuilder:validation:MinProperties=1
-	// +kubebuilder:validation:MaxProperties=10
-	Attributes map[string]string `json:"attributes,omitempty"`
-}
-
-type SourceIP struct{}
 
 // +kubebuilder:validation:ExactlyOneOf=maxRequestSize;disable
 type Buffer struct {
@@ -460,4 +433,78 @@ type Buffer struct {
 	// Can be used to disable buffer policies applied at a higher level in the config hierarchy.
 	// +optional
 	Disable *PolicyDisable `json:"disable,omitempty"`
+}
+
+// RetryOnCondition specifies the condition under which retry takes place.
+//
+// +kubebuilder:validation:Enum={"5xx",gateway-error,reset,reset-before-request,connect-failure,envoy-ratelimited,retriable-4xx,refused-stream,retriable-status-codes,http3-post-connect-failure,cancelled,deadline-exceeded,internal,resource-exhausted,unavailable}
+type RetryOnCondition string
+
+// Retry defines the retry policy
+//
+// +kubebuilder:validation:XValidation:rule="has(self.retryOn) || has(self.statusCodes)",message="retryOn or statusCodes must be set."
+type Retry struct {
+	// RetryOn specifies the conditions under which a retry should be attempted.
+	// +optional
+	//
+	// +kubebuilder:validation:MinItems=1
+	RetryOn []RetryOnCondition `json:"retryOn,omitempty"`
+
+	// Attempts specifies the number of retry attempts for a request.
+	// Defaults to 1 attempt if not set.
+	// A value of 0 effectively disables retries.
+	// +optional
+	//
+	// +kubebuilder:default=1
+	// +kubebuilder:validation:Minimum=0
+	Attempts int32 `json:"attempts,omitempty"` //nolint:kubeapilinter
+
+	// PerTryTimeout specifies the timeout per retry attempt (incliding the initial attempt).
+	// If a global timeout is configured on a route, this timeout must be less than the global
+	// route timeout.
+	// It is specified as a sequence of decimal numbers, each with optional fraction and a unit suffix, such as "1s" or "500ms".
+	// +optional
+	//
+	// +kubebuilder:validation:XValidation:rule="matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')",message="invalid duration value"
+	// +kubebuilder:validation:XValidation:rule="duration(self) >= duration('1ms')",message="retry.perTryTimeout must be at least 1ms."
+	PerTryTimeout *metav1.Duration `json:"perTryTimeout,omitempty"`
+
+	// StatusCodes specifies the HTTP status codes in the range 400-599 that should be retried in addition
+	// to the conditions specified in RetryOn.
+	// +optional
+	//
+	// +kubebuilder:validation:MinItems=1
+	StatusCodes []gwv1.HTTPRouteRetryStatusCode `json:"statusCodes,omitempty"`
+
+	// BackoffBaseInterval specifies the base interval used with a fully jittered exponential back-off between retries.
+	// Defaults to 25ms if not set.
+	// Given a backoff base interval B and retry number N, the back-off for the retry is in the range [0, (2^N-1)*B].
+	// The backoff interval is capped at a max of 10 times the base interval.
+	// E.g., given a value of 25ms, the first retry will be delayed randomly by 0-24ms, the 2nd by 0-74ms,
+	// the 3rd by 0-174ms, and so on, and capped to a max of 10 times the base interval (250ms).
+	// +optional
+	//
+	// +kubebuilder:default="25ms"
+	// +kubebuilder:validation:XValidation:rule="matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')",message="invalid duration value"
+	// +kubebuilder:validation:XValidation:rule="duration(self) >= duration('1ms')",message="retry.backoffBaseInterval must be at least 1ms."
+	BackoffBaseInterval *metav1.Duration `json:"backoffBaseInterval,omitempty"`
+}
+
+type Timeouts struct {
+	// Request specifies a timeout for an individual request from the gateway to a backend.
+	// This spans between the point at which the entire downstream request (i.e. end-of-stream) has been
+	// processed and when the backend response has been completely processed.
+	// A value of 0 effectively disables the timeout.
+	// It is specified as a sequence of decimal numbers, each with optional fraction and a unit suffix, such as "1s" or "500ms".
+	// +optional
+	//
+	// +kubebuilder:validation:XValidation:rule="matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')",message="invalid duration value"
+	Request *metav1.Duration `json:"request,omitempty"`
+
+	// StreamIdle specifies a timeout for a requests' idle streams.
+	// A value of 0 effectively disables the timeout.
+	// +optional
+	//
+	// +kubebuilder:validation:XValidation:rule="matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')",message="invalid duration value"
+	StreamIdle *metav1.Duration `json:"streamIdle,omitempty"`
 }

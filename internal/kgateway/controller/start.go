@@ -28,7 +28,8 @@ import (
 	"github.com/kgateway-dev/kgateway/v2/internal/kgateway/krtcollections"
 	"github.com/kgateway-dev/kgateway/v2/internal/kgateway/proxy_syncer"
 	"github.com/kgateway-dev/kgateway/v2/internal/kgateway/translator/metrics"
-	"github.com/kgateway-dev/kgateway/v2/internal/kgateway/utils/krtutil"
+	krtinternal "github.com/kgateway-dev/kgateway/v2/internal/kgateway/utils/krtutil"
+	agentgatewayplugins "github.com/kgateway-dev/kgateway/v2/pkg/agentgateway/plugins"
 	"github.com/kgateway-dev/kgateway/v2/pkg/deployer"
 	"github.com/kgateway-dev/kgateway/v2/pkg/logging"
 	sdk "github.com/kgateway-dev/kgateway/v2/pkg/pluginsdk"
@@ -72,15 +73,17 @@ type StartConfig struct {
 	RestConfig *rest.Config
 	// ExtensionsFactory is the factory function which will return an extensions.K8sGatewayExtensions
 	// This is responsible for producing the extension points that this controller requires
-	ExtraPlugins           func(ctx context.Context, commoncol *common.CommonCollections) []sdk.Plugin
-	ExtraGatewayParameters func(cli client.Client, inputs *deployer.Inputs) []deployer.ExtraGatewayParameters
-	Client                 istiokube.Client
+	ExtraPlugins             func(ctx context.Context, commoncol *common.CommonCollections) []sdk.Plugin
+	ExtraAgentgatewayPlugins func(ctx context.Context, agw *agentgatewayplugins.AgwCollections) []agentgatewayplugins.AgentgatewayPlugin
+	ExtraGatewayParameters   func(cli client.Client, inputs *deployer.Inputs) []deployer.ExtraGatewayParameters
+	Client                   istiokube.Client
 
+	AgwCollections    *agentgatewayplugins.AgwCollections
 	CommonCollections *common.CommonCollections
 	AugmentedPods     krt.Collection[krtcollections.LocalityPod]
 	UniqueClients     krt.Collection[ir.UniqlyConnectedClient]
 
-	KrtOptions krtutil.KrtOptions
+	KrtOptions krtinternal.KrtOptions
 }
 
 // Start runs the controllers responsible for processing the K8s Gateway API objects
@@ -103,7 +106,6 @@ func NewControllerBuilder(ctx context.Context, cfg StartConfig) (*ControllerBuil
 		setupLog.Info("starting log in dev mode")
 		loggingOptions.SetDefaultOutputLevel(istiolog.OverrideScopeName, istiolog.DebugLevel)
 		logging.MustSetLevel(ControllerRuntimeLogger, slog.LevelDebug)
-		loggingOptions.JSONEncoding = false
 	}
 	istiolog.Configure(loggingOptions)
 
@@ -158,16 +160,41 @@ func NewControllerBuilder(ctx context.Context, cfg StartConfig) (*ControllerBuil
 		cfg.AgentGatewayClassName,
 	)
 	proxySyncer.Init(ctx, cfg.KrtOptions)
+	if err := cfg.Manager.Add(proxySyncer); err != nil {
+		setupLog.Error(err, "unable to add proxySyncer runnable")
+		return nil, err
+	}
+
+	statusSyncer := proxy_syncer.NewStatusSyncer(
+		cfg.Manager,
+		mergedPlugins,
+		cfg.ControllerName,
+		cfg.AgentGatewayClassName,
+		cfg.Client,
+		cfg.CommonCollections,
+		proxySyncer.ReportQueue(),
+		proxySyncer.BackendPolicyReportQueue(),
+		proxySyncer.CacheSyncs(),
+	)
+	if err := cfg.Manager.Add(statusSyncer); err != nil {
+		setupLog.Error(err, "unable to add statusSyncer runnable")
+		return nil, err
+	}
 
 	var agentGatewaySyncer *agentgatewaysyncer.AgentGwSyncer
 	if cfg.SetupOpts.GlobalSettings.EnableAgentGateway {
+		agentgatewayMergedPlugins := agentGatewayPluginFactory(cfg)(ctx, cfg.AgwCollections)
+		cfg.AgwCollections.InitPlugins(ctx, mergedPlugins, globalSettings)
+
 		agentGatewaySyncer = agentgatewaysyncer.NewAgentGwSyncer(
 			cfg.ControllerName,
 			cfg.AgentGatewayClassName,
 			cfg.Client,
 			cfg.Manager,
-			cfg.CommonCollections,
+			cfg.AgwCollections,
+			// TODO(npolshak): move away from shared mergedPlugins to agentGatewayPlugins https://github.com/kgateway-dev/kgateway/issues/12052
 			mergedPlugins,
+			agentgatewayMergedPlugins,
 			cfg.SetupOpts.Cache,
 			namespaces.GetPodNamespace(),
 			cfg.Client.ClusterID().String(),
@@ -179,11 +206,21 @@ func NewControllerBuilder(ctx context.Context, cfg StartConfig) (*ControllerBuil
 			setupLog.Error(err, "unable to add agentGatewaySyncer runnable")
 			return nil, err
 		}
-	}
 
-	if err := cfg.Manager.Add(proxySyncer); err != nil {
-		setupLog.Error(err, "unable to add proxySyncer runnable")
-		return nil, err
+		agentGatewayStatusSyncer := agentgatewaysyncer.NewAgentGwStatusSyncer(
+			cfg.ControllerName,
+			cfg.AgentGatewayClassName,
+			cfg.Client,
+			cfg.Manager,
+			agentGatewaySyncer.GatewayReportQueue(),
+			agentGatewaySyncer.ListenerSetReportQueue(),
+			agentGatewaySyncer.RouteReportQueue(),
+			agentGatewaySyncer.CacheSyncs(),
+		)
+		if err := cfg.Manager.Add(agentGatewayStatusSyncer); err != nil {
+			setupLog.Error(err, "unable to add agentGatewayStatusSyncer runnable")
+			return nil, err
+		}
 	}
 
 	setupLog.Info("starting controller builder")
@@ -220,6 +257,16 @@ func pluginFactoryWithBuiltin(cfg StartConfig) extensions2.K8sGatewayExtensionsF
 			plugins = append(plugins, cfg.ExtraPlugins(ctx, commoncol)...)
 		}
 		return registry.MergePlugins(plugins...)
+	}
+}
+
+func agentGatewayPluginFactory(cfg StartConfig) func(ctx context.Context, agw *agentgatewayplugins.AgwCollections) agentgatewayplugins.AgentgatewayPlugin {
+	return func(ctx context.Context, agw *agentgatewayplugins.AgwCollections) agentgatewayplugins.AgentgatewayPlugin {
+		plugins := agentgatewayplugins.Plugins(agw)
+		if cfg.ExtraAgentgatewayPlugins != nil {
+			plugins = append(plugins, cfg.ExtraAgentgatewayPlugins(ctx, agw)...)
+		}
+		return agentgatewayplugins.MergePlugins(plugins...)
 	}
 }
 

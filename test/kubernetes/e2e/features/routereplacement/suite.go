@@ -69,6 +69,14 @@ func NewTestingSuite(ctx context.Context, testInst *e2e.TestInstallation) suite.
 				manifest: standardModeInvalidPolicyManifest,
 				mode:     settings.RouteReplacementStandard,
 			},
+			"TestStrictModeInvalidMatcherDropsRoute": {
+				manifest: strictModeInvalidMatcherManifest,
+				mode:     settings.RouteReplacementStrict,
+			},
+			"TestStrictModeInvalidRouteReplacement": {
+				manifest: strictModeInvalidRouteManifest,
+				mode:     settings.RouteReplacementStrict,
+			},
 		},
 	}
 }
@@ -219,6 +227,64 @@ func (s *testingSuite) TestStandardModeInvalidPolicyReplacement() {
 	)
 }
 
+// TestStrictModeInvalidMatcherDropsRoute tests that in STRICT mode,
+// routes with invalid matchers are dropped entirely
+func (s *testingSuite) TestStrictModeInvalidMatcherDropsRoute() {
+	// Verify route status shows Accepted=False with RouteRuleDropped reason
+	s.testInstallation.Assertions.EventuallyHTTPRouteCondition(
+		s.ctx,
+		invalidMatcherRoute.Name,
+		invalidMatcherRoute.Namespace,
+		gwv1.RouteConditionAccepted,
+		metav1.ConditionFalse,
+	)
+
+	// Verify that the route was dropped (no route should exist, so we should get 404)
+	s.testInstallation.Assertions.AssertEventualCurlResponse(
+		s.ctx,
+		testdefaults.CurlPodExecOpt,
+		[]curl.Option{
+			curl.WithHost(kubeutils.ServiceFQDN(proxyObjectMeta)),
+			curl.WithHostHeader("invalid-matcher.example.com"),
+			curl.WithPort(gatewayPort),
+			curl.WithPath("/headers"),
+			curl.WithHeader("x-test-header", "some-value"),
+		},
+		&testmatchers.HttpResponse{
+			StatusCode: http.StatusNotFound,
+		},
+	)
+}
+
+// TestStrictModeInvalidRouteReplacement tests that in STRICT mode,
+// routes with invalid built-in policies are replaced with direct responses
+func (s *testingSuite) TestStrictModeInvalidRouteReplacement() {
+	// Verify route status shows Accepted=False with RouteRuleDropped reason (for replacement)
+	s.testInstallation.Assertions.EventuallyHTTPRouteCondition(
+		s.ctx,
+		invalidConfigRoute.Name,
+		invalidConfigRoute.Namespace,
+		gwv1.RouteConditionAccepted,
+		metav1.ConditionFalse,
+	)
+
+	// Verify that a route with an invalid built-in policy is replaced with a 500 direct response
+	s.testInstallation.Assertions.AssertEventualCurlResponse(
+		s.ctx,
+		testdefaults.CurlPodExecOpt,
+		[]curl.Option{
+			curl.WithHost(kubeutils.ServiceFQDN(proxyObjectMeta)),
+			curl.WithHostHeader("invalid-config.example.com"),
+			curl.WithPort(gatewayPort),
+			curl.WithPath("/headers"),
+		},
+		&testmatchers.HttpResponse{
+			StatusCode: http.StatusInternalServerError,
+			Body:       gomega.ContainSubstring(`invalid route configuration detected and replaced with a direct response.`),
+		},
+	)
+}
+
 func (s *testingSuite) patchDeploymentWithMode(mode settings.RouteReplacementMode) {
 	controllerNamespace := s.testInstallation.Metadata.InstallNamespace
 
@@ -277,6 +343,18 @@ func (s *testingSuite) patchDeploymentWithMode(mode settings.RouteReplacementMod
 	s.testInstallation.Assertions.EventuallyPodsRunning(s.ctx, controllerNamespace, metav1.ListOptions{
 		LabelSelector: "app.kubernetes.io/name=kgateway",
 	})
+
+	// Wait until there is only one pod. This way the new pod with the updated env var becomes the leader
+	// and can write the correct status.
+	s.testInstallation.Assertions.EventuallyReadyReplicas(s.ctx, metav1.ObjectMeta{
+		Name:      "kgateway",
+		Namespace: s.testInstallation.Metadata.InstallNamespace,
+	}, gomega.Equal(1))
+	s.testInstallation.Assertions.Gomega.Eventually(func(g gomega.Gomega) {
+		out, err := s.testInstallation.Actions.Kubectl().GetContainerLogs(s.ctx, s.testInstallation.Metadata.InstallNamespace, testdefaults.KGatewayDeployment)
+		g.Expect(err).NotTo(gomega.HaveOccurred(), "Failed to get pod logs")
+		g.Expect(out).To(gomega.ContainSubstring("successfully acquired lease"))
+	}, "60s", "10s").Should(gomega.Succeed())
 }
 
 func (s *testingSuite) restoreOriginalDeployment() {
