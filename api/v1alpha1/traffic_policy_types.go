@@ -185,6 +185,7 @@ type (
 		// +required
 		Name HeaderName `json:"name,omitempty"`
 		// Value is the template to apply to generate the output value for the header.
+		// Inja is supported for Envoy and CEL is supported for agentgateway.
 		Value Template `json:"value,omitempty"`
 		// Type specifies the expression type used in the Value field.
 		// Defaults to "Inja" if not specified.
@@ -214,6 +215,7 @@ type BodyTransformation struct {
 	ParseAs BodyParseBehavior `json:"parseAs"`
 
 	// Value is the template to apply to generate the output value for the body.
+	// Inja is supported for Envoy and CEL is supported for agentgateway.
 	// +optional
 	Value *Template `json:"value,omitempty"`
 

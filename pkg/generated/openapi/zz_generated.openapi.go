@@ -1996,7 +1996,7 @@ func schema_kgateway_v2_api_v1alpha1_BodyTransformation(ref common.ReferenceCall
 					},
 					"value": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Value is the template to apply to generate the output value for the body.",
+							Description: "Value is the template to apply to generate the output value for the body. Inja is supported for Envoy and CEL is supported for agentgateway.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -4107,7 +4107,7 @@ func schema_kgateway_v2_api_v1alpha1_HeaderTransformation(ref common.ReferenceCa
 					},
 					"value": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Value is the template to apply to generate the output value for the header.",
+							Description: "Value is the template to apply to generate the output value for the header. Inja is supported for Envoy and CEL is supported for agentgateway.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
