@@ -2001,6 +2001,13 @@ func schema_kgateway_v2_api_v1alpha1_BodyTransformation(ref common.ReferenceCall
 							Format:      "",
 						},
 					},
+					"type": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Type defines the expression language used in the transformation template.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 				},
 				Required: []string{"parseAs"},
 			},
@@ -4101,6 +4108,13 @@ func schema_kgateway_v2_api_v1alpha1_HeaderTransformation(ref common.ReferenceCa
 					"value": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Value is the template to apply to generate the output value for the header.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"type": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Type specifies the expression type used in the Value field. Defaults to \"Inja\" if not specified.",
 							Type:        []string{"string"},
 							Format:      "",
 						},

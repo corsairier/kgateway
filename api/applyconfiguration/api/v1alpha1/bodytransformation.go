@@ -9,8 +9,9 @@ import (
 // BodyTransformationApplyConfiguration represents a declarative configuration of the BodyTransformation type for use
 // with apply.
 type BodyTransformationApplyConfiguration struct {
-	ParseAs *apiv1alpha1.BodyParseBehavior `json:"parseAs,omitempty"`
-	Value   *apiv1alpha1.InjaTemplate      `json:"value,omitempty"`
+	ParseAs *apiv1alpha1.BodyParseBehavior            `json:"parseAs,omitempty"`
+	Value   *apiv1alpha1.Template                     `json:"value,omitempty"`
+	Type    *apiv1alpha1.TransformationExpressionType `json:"type,omitempty"`
 }
 
 // BodyTransformationApplyConfiguration constructs a declarative configuration of the BodyTransformation type for use with
@@ -30,7 +31,15 @@ func (b *BodyTransformationApplyConfiguration) WithParseAs(value apiv1alpha1.Bod
 // WithValue sets the Value field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Value field is set to the value of the last call.
-func (b *BodyTransformationApplyConfiguration) WithValue(value apiv1alpha1.InjaTemplate) *BodyTransformationApplyConfiguration {
+func (b *BodyTransformationApplyConfiguration) WithValue(value apiv1alpha1.Template) *BodyTransformationApplyConfiguration {
 	b.Value = &value
+	return b
+}
+
+// WithType sets the Type field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Type field is set to the value of the last call.
+func (b *BodyTransformationApplyConfiguration) WithType(value apiv1alpha1.TransformationExpressionType) *BodyTransformationApplyConfiguration {
+	b.Type = &value
 	return b
 }
