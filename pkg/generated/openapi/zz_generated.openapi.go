@@ -5122,7 +5122,7 @@ func schema_kgateway_v2_api_v1alpha1_MCP(ref common.ReferenceCallback) common.Op
 							},
 						},
 						SchemaProps: spec.SchemaProps{
-							Description: "Targets is a list of MCP targets to use for this backend.",
+							Description: "Targets is a list of MCP targets to use for this backend. Policies targeting MCP targets must use targetRefs[].sectionName to select the target by name.",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -5231,13 +5231,13 @@ func schema_kgateway_v2_api_v1alpha1_McpTargetSelector(ref common.ReferenceCallb
 					},
 					"selector": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Selector is the selector to use to select the MCP targets.",
+							Description: "Selector is the selector to use to select the MCP targets. Note: Policies must target the resource selected by the target and not the name of the selector-based target on the Backend resource.",
 							Ref:         ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.McpSelector"),
 						},
 					},
 					"static": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Static is the static MCP target to use.",
+							Description: "Static is the static MCP target to use. Policies can target static backends by targeting the Backend resource and using sectionName to target the specific static target by name.",
 							Ref:         ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.McpTarget"),
 						},
 					},
@@ -7185,6 +7185,13 @@ func schema_kgateway_v2_api_v1alpha1_TLS(ref common.ReferenceCallback) common.Op
 						SchemaProps: spec.SchemaProps{
 							Description: "File paths to certificates local to the proxy.",
 							Ref:         ref("github.com/kgateway-dev/kgateway/v2/api/v1alpha1.TLSFiles"),
+						},
+					},
+					"wellKnownCACertificates": {
+						SchemaProps: spec.SchemaProps{
+							Description: "WellKnownCACertificates specifies whether to use a well-known set of CA certificates for validating the backend's certificate chain. Currently, only the system certificate pool is supported via SDS.",
+							Type:        []string{"string"},
+							Format:      "",
 						},
 					},
 					"insecureSkipVerify": {
