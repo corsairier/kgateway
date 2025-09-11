@@ -33,7 +33,7 @@ const (
 	rbacPolicySuffix            = ":rbac"
 	localRateLimitPolicySuffix  = ":rl-local"
 	globalRateLimitPolicySuffix = ":rl-global"
-	transformationPolicySuffix = ":transformation"
+	transformationPolicySuffix  = ":transformation"
 )
 
 var logger = logging.New("agentgateway/plugins")

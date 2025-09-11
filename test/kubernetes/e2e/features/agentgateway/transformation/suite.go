@@ -55,7 +55,7 @@ func NewTestingSuite(ctx context.Context, testInst *e2e.TestInstallation) suite.
 	}
 
 	// everything is applied during setup; there are no additional test-specific manifests
-	testCases := map[string]base.TestCase{}
+	testCases := map[string]*base.TestCase{}
 
 	return &testingSuite{
 		BaseTestingSuite: base.NewBaseTestingSuite(ctx, testInst, setupTestCase, testCases),
@@ -78,7 +78,6 @@ func (s *testingSuite) SetupSuite() {
 
 // TestTransformationForHeaders tests header-based transformations
 func (s *testingSuite) TestTransformationForHeaders() {
-
 	testCases := []struct {
 		name      string
 		routeName string
@@ -129,7 +128,6 @@ func (s *testingSuite) TestTransformationForHeaders() {
 
 // TestTransformationForBodyJson tests JSON body parsing transformations
 func (s *testingSuite) TestTransformationForBodyJson() {
-
 	testCases := []struct {
 		name      string
 		routeName string
@@ -179,7 +177,6 @@ func (s *testingSuite) TestTransformationForBodyJson() {
 
 // TestTransformationForBodyAsString tests string body parsing transformations
 func (s *testingSuite) TestTransformationForBodyAsString() {
-
 	testCases := []struct {
 		name      string
 		routeName string
