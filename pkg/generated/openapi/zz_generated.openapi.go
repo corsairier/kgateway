@@ -1988,7 +1988,7 @@ func schema_kgateway_v2_api_v1alpha1_BodyTransformation(ref common.ReferenceCall
 				Properties: map[string]spec.Schema{
 					"parseAs": {
 						SchemaProps: spec.SchemaProps{
-							Description: "ParseAs defines what auto formatting should be applied to the body. This can make interacting with keys within a json body much easier if AsJson is selected.",
+							Description: "ParseAs defines what auto formatting should be applied to the body. This can make interacting with keys within a json body much easier if AsJson is selected. This field is only supported for kgateway (Envoy) data plane and is ignored by agentgateway. For agentgateway, use json(request.body) or json(response.body) directly in CEL expressions.",
 							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",

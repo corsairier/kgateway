@@ -951,15 +951,8 @@ func convertTransformSpec(spec *v1alpha1.Transform) *api.PolicySpec_Transformati
 				"operation", "BODY",
 				"type", spec.Body.Type)
 		} else {
-			expression := string(*spec.Body.Value)
-
-			// Handle parseAs case - wrap expression with json() if parseAs is AsJson
-			if spec.Body.ParseAs == v1alpha1.BodyParseBehaviorAsJSON {
-				expression = fmt.Sprintf("json(%s)", expression)
-			}
-
 			transform.Body = &api.PolicySpec_BodyTransformation{
-				Expression: expression,
+				Expression: string(*spec.Body.Value),
 			}
 		}
 	}

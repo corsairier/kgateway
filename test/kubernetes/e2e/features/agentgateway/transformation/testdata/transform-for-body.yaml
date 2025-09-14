@@ -1,12 +1,12 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: example-route-for-body-json
+  name: example-route-for-body
 spec:
   parentRefs:
     - name: gw
   hostnames:
-    - "example-route-for-body-json.com"
+    - "example-route-for-body.com"
   rules:
     - backendRefs:
         - name: simple-svc
@@ -15,12 +15,12 @@ spec:
 apiVersion: gateway.kgateway.dev/v1alpha1
 kind: TrafficPolicy
 metadata:
-  name: example-traffic-policy-for-body-json
+  name: example-traffic-policy-for-body
 spec:
   targetRefs:
   - group: gateway.networking.k8s.io
     kind: HTTPRoute
-    name: example-route-for-body-json
+    name: example-route-for-body
   transformation:
     request:
       set:
@@ -28,7 +28,6 @@ spec:
           value: "'mykey' in json(request.body) && 'myinnerkey' in json(request.body).mykey ? 'level_' + string(json(request.body).mykey.myinnerkey) : 'level_unknown'"
           type: CEL
       body:
-        parseAs: "AsJson"
         value: "request.body"
         type: CEL
     response:
@@ -40,6 +39,5 @@ spec:
           value: "'mykey' in json(request.body) && 'myinnerkey' in json(request.body).mykey ? 'key_level_' + string(json(request.body).mykey.myinnerkey) : 'key_unknown'"
           type: CEL
       body:
-        parseAs: "AsJson"
         value: "request.headers"
         type: CEL
