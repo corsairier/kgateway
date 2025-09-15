@@ -120,7 +120,6 @@ func (s *testingSuite) TestGatewayWithTransformedRoute() {
 			routeName: "route-for-body",
 			opts: []curl.Option{
 				curl.WithBody(`{"mykey": {"myinnerkey": "myinnervalue"}}`),
-				// curl.WithHeader("Content-Type", "application/json"),
 				curl.WithHeader("X-Incoming-Stuff", "super"),
 			},
 			resp: &testmatchers.HttpResponse{
