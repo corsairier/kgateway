@@ -902,15 +902,6 @@ func convertTransformSpec(spec *v1alpha1.Transform) *api.PolicySpec_Transformati
 	transform := &api.PolicySpec_TransformationPolicy_Transform{}
 
 	for _, header := range spec.Set {
-		if err := validateTransformationTypeForAgentgateway(header.Type); err != nil {
-			logger.Error("unsupported transformation type for agentgateway",
-				"error", err,
-				"header_name", string(header.Name),
-				"operation", "SET",
-				"type", header.Type)
-			continue
-		}
-
 		transform.Set = append(transform.Set, &api.PolicySpec_HeaderTransformation{
 			Name:       string(header.Name),
 			Expression: string(header.Value),
@@ -918,15 +909,6 @@ func convertTransformSpec(spec *v1alpha1.Transform) *api.PolicySpec_Transformati
 	}
 
 	for _, header := range spec.Add {
-		if err := validateTransformationTypeForAgentgateway(header.Type); err != nil {
-			logger.Error("unsupported transformation type for agentgateway",
-				"error", err,
-				"header_name", string(header.Name),
-				"operation", "ADD",
-				"type", header.Type)
-			continue
-		}
-
 		transform.Add = append(transform.Add, &api.PolicySpec_HeaderTransformation{
 			Name:       string(header.Name),
 			Expression: string(header.Value),
@@ -937,34 +919,10 @@ func convertTransformSpec(spec *v1alpha1.Transform) *api.PolicySpec_Transformati
 
 	// Handle body transformation if present
 	if spec.Body != nil && spec.Body.Value != nil {
-		if err := validateTransformationTypeForAgentgateway(spec.Body.Type); err != nil {
-			logger.Error("unsupported transformation type for agentgateway",
-				"error", err,
-				"operation", "BODY",
-				"type", spec.Body.Type)
-		} else {
-			transform.Body = &api.PolicySpec_BodyTransformation{
-				Expression: string(*spec.Body.Value),
-			}
+		transform.Body = &api.PolicySpec_BodyTransformation{
+			Expression: string(*spec.Body.Value),
 		}
 	}
 
 	return transform
-}
-
-// validateTransformationTypeForAgentgateway validates that only CEL expressions are used for agentgateway
-func validateTransformationTypeForAgentgateway(expressionType *v1alpha1.TransformationExpressionType) error {
-	if expressionType == nil {
-		return fmt.Errorf("unsupported type %s", "nil")
-	}
-
-	if *expressionType == v1alpha1.TransformationExpressionTypeInja {
-		return fmt.Errorf("unsupported type %s", *expressionType)
-	}
-
-	if *expressionType == v1alpha1.TransformationExpressionTypeCEL {
-		return nil
-	}
-
-	return fmt.Errorf("unsupported type %s", *expressionType)
 }

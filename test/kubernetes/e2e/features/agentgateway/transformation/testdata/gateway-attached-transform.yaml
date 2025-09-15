@@ -26,9 +26,7 @@ spec:
       set:
         - name: request-gateway
           value: "'hello'"
-          type: CEL
     response:
       set:
         - name: response-gateway
           value: "'goodbye'"
-          type: CEL

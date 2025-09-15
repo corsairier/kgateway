@@ -166,15 +166,6 @@ type Transform struct {
 
 type Template string
 
-// TransformationExpressionType defines the type of expression used in transformations
-// +kubebuilder:validation:Enum=Inja;CEL
-type TransformationExpressionType string
-
-const (
-	TransformationExpressionTypeInja TransformationExpressionType = "Inja"
-	TransformationExpressionTypeCEL  TransformationExpressionType = "CEL"
-)
-
 // EnvoyHeaderName is the name of a header or pseudo header
 // Based on gateway api v1.Headername but allows a singular : at the start
 //
@@ -189,13 +180,10 @@ type (
 		// +required
 		Name HeaderName `json:"name,omitempty"`
 		// Value is the template to apply to generate the output value for the header.
-		// Inja is supported for Envoy and CEL is supported for agentgateway.
+		// Inja templates are supported for Envoy-based data planes only.
+		// CEL expressions are supported for agentgateway data plane only.
+		// The system will auto-detect the appropriate template format based on the data plane.
 		Value Template `json:"value,omitempty"`
-		// Type specifies the expression type used in the Value field.
-		// Defaults to "Inja" if not specified.
-		// +optional
-		// +kubebuilder:default=Inja
-		Type *TransformationExpressionType `json:"type,omitempty"`
 	}
 )
 
@@ -221,15 +209,11 @@ type BodyTransformation struct {
 	ParseAs BodyParseBehavior `json:"parseAs"`
 
 	// Value is the template to apply to generate the output value for the body.
-	// Inja is supported for Envoy and CEL is supported for agentgateway.
+	// Inja templates are supported for Envoy-based data planes only.
+	// CEL expressions are supported for agentgateway data plane only.
+	// The system will auto-detect the appropriate template format based on the data plane.
 	// +optional
 	Value *Template `json:"value,omitempty"`
-
-	// Type defines the expression language used in the transformation template.
-	// +optional
-	// +kubebuilder:validation:Enum=Inja;CEL
-	// +kubebuilder:default=Inja
-	Type *TransformationExpressionType `json:"type,omitempty"`
 }
 
 // ExtAuthPolicy configures external authentication for a route.

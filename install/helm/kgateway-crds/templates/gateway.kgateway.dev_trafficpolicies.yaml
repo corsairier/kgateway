@@ -885,12 +885,6 @@ spec:
                           properties:
                             name:
                               type: string
-                            type:
-                              default: Inja
-                              enum:
-                              - Inja
-                              - CEL
-                              type: string
                             value:
                               type: string
                           required:
@@ -909,16 +903,6 @@ spec:
                             - AsString
                             - AsJson
                             type: string
-                          type:
-                            allOf:
-                            - enum:
-                              - Inja
-                              - CEL
-                            - enum:
-                              - Inja
-                              - CEL
-                            default: Inja
-                            type: string
                           value:
                             type: string
                         required:
@@ -934,12 +918,6 @@ spec:
                         items:
                           properties:
                             name:
-                              type: string
-                            type:
-                              default: Inja
-                              enum:
-                              - Inja
-                              - CEL
                               type: string
                             value:
                               type: string
@@ -959,12 +937,6 @@ spec:
                           properties:
                             name:
                               type: string
-                            type:
-                              default: Inja
-                              enum:
-                              - Inja
-                              - CEL
-                              type: string
                             value:
                               type: string
                           required:
@@ -983,16 +955,6 @@ spec:
                             - AsString
                             - AsJson
                             type: string
-                          type:
-                            allOf:
-                            - enum:
-                              - Inja
-                              - CEL
-                            - enum:
-                              - Inja
-                              - CEL
-                            default: Inja
-                            type: string
                           value:
                             type: string
                         required:
@@ -1008,12 +970,6 @@ spec:
                         items:
                           properties:
                             name:
-                              type: string
-                            type:
-                              default: Inja
-                              enum:
-                              - Inja
-                              - CEL
                               type: string
                             value:
                               type: string

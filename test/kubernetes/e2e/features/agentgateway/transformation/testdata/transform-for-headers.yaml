@@ -27,9 +27,7 @@ spec:
       set:
         - name: x-foo-bar
           value: "'foolen_' + request.headers['content-length']"
-          type: CEL
     response:
       set:
         - name: x-foo-response
           value: "'x-add-bar' in request.headers ? 'supersuper' + request.headers['x-add-bar'] : 'notsuper'"
-          type: CEL

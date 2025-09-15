@@ -2,7 +2,6 @@ package trafficpolicy
 
 import (
 	"encoding/json"
-	"fmt"
 
 	envoyroutev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	exteniondynamicmodulev3 "github.com/envoyproxy/go-control-plane/envoy/extensions/dynamic_modules/v3"
@@ -72,15 +71,6 @@ func toTraditionalTransform(t *v1alpha1.Transform) *transformationpb.Transformat
 		},
 	}
 	for _, h := range t.Set {
-		if err := validateTransformationTypeForEnvoy(h.Type); err != nil {
-			logger.Error("unsupported transformation type for Envoy",
-				"error", err,
-				"header_name", string(h.Name),
-				"operation", "SET",
-				"type", h.Type)
-			continue // Skip this transformation
-		}
-
 		tt.TransformationTemplate.GetHeaders()[string(h.Name)] = &transformationpb.InjaTemplate{
 			Text: string(h.Value),
 		}
@@ -88,15 +78,6 @@ func toTraditionalTransform(t *v1alpha1.Transform) *transformationpb.Transformat
 	}
 
 	for _, h := range t.Add {
-		if err := validateTransformationTypeForEnvoy(h.Type); err != nil {
-			logger.Error("unsupported transformation type for Envoy",
-				"error", err,
-				"header_name", string(h.Name),
-				"operation", "ADD",
-				"type", h.Type)
-			continue
-		}
-
 		tt.TransformationTemplate.HeadersToAppend = append(tt.TransformationTemplate.GetHeadersToAppend(), &transformationpb.TransformationTemplate_HeaderToAppend{
 			Key: string(h.Name),
 			Value: &transformationpb.InjaTemplate{
@@ -131,20 +112,11 @@ func toTraditionalTransform(t *v1alpha1.Transform) *transformationpb.Transformat
 		}
 		tt.TransformationTemplate.ParseBodyBehavior = traditionalParsing
 		if value := t.Body.Value; value != nil {
-			// Validate transformation type for Envoy
-			if err := validateTransformationTypeForEnvoy(t.Body.Type); err != nil {
-				logger.Error("unsupported transformation type for Envoy",
-					"component", "plugin/trafficpolicy",
-					"error", err,
-					"operation", "BODY",
-					"type", t.Body.Type)
-			} else {
-				hasTransform = true
-				tt.TransformationTemplate.BodyTransformation = &transformationpb.TransformationTemplate_Body{
-					Body: &transformationpb.InjaTemplate{
-						Text: string(*value),
-					},
-				}
+			hasTransform = true
+			tt.TransformationTemplate.BodyTransformation = &transformationpb.TransformationTemplate_Body{
+				Body: &transformationpb.InjaTemplate{
+					Text: string(*value),
+				},
 			}
 		}
 	}
@@ -250,15 +222,6 @@ func toRustFormationPerRouteConfig(t *v1alpha1.Transform) (map[string]interface{
 	// we dont currently have strongly typed objects in rustformation
 	setter := make([][2]string, 0, len(t.Set)/2)
 	for _, h := range t.Set {
-		if err := validateTransformationTypeForEnvoy(h.Type); err != nil {
-			logger.Error("unsupported transformation type for Envoy (Rust path)",
-				"error", err,
-				"header_name", string(h.Name),
-				"operation", "SET",
-				"type", h.Type)
-			continue
-		}
-
 		setter = append(setter, [2]string{string(h.Name), string(h.Value)})
 	}
 
@@ -370,21 +333,4 @@ func (p *trafficPolicyPluginGwPass) handleTransformation(fcn string, typedFilter
 		typedFilterConfig.AddTypedConfig(transformationFilterNamePrefix, transform.config)
 		p.setTransformationInChain[fcn] = true
 	}
-}
-
-// validateTransformationTypeForEnvoy validates that only Inja expressions are used for Envoy
-func validateTransformationTypeForEnvoy(expressionType *v1alpha1.TransformationExpressionType) error {
-	if expressionType == nil {
-		return fmt.Errorf("unsupported type %s", "nil")
-	}
-
-	if *expressionType == v1alpha1.TransformationExpressionTypeCEL {
-		return fmt.Errorf("unsupported type %s", *expressionType)
-	}
-
-	if *expressionType == v1alpha1.TransformationExpressionTypeInja {
-		return nil
-	}
-
-	return fmt.Errorf("unsupported type %s", *expressionType)
 }

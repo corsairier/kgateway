@@ -1996,14 +1996,7 @@ func schema_kgateway_v2_api_v1alpha1_BodyTransformation(ref common.ReferenceCall
 					},
 					"value": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Value is the template to apply to generate the output value for the body. Inja is supported for Envoy and CEL is supported for agentgateway.",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"type": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Type defines the expression language used in the transformation template.",
+							Description: "Value is the template to apply to generate the output value for the body. Inja templates are supported for Envoy-based data planes only. CEL expressions are supported for agentgateway data plane only. The system will auto-detect the appropriate template format based on the data plane.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -4129,14 +4122,7 @@ func schema_kgateway_v2_api_v1alpha1_HeaderTransformation(ref common.ReferenceCa
 					},
 					"value": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Value is the template to apply to generate the output value for the header. Inja is supported for Envoy and CEL is supported for agentgateway.",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"type": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Type specifies the expression type used in the Value field. Defaults to \"Inja\" if not specified.",
+							Description: "Value is the template to apply to generate the output value for the header. Inja templates are supported for Envoy-based data planes only. CEL expressions are supported for agentgateway data plane only. The system will auto-detect the appropriate template format based on the data plane.",
 							Type:        []string{"string"},
 							Format:      "",
 						},

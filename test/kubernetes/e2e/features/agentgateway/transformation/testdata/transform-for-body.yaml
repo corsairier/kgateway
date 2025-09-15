@@ -26,18 +26,13 @@ spec:
       set:
         - name: "x-transformed-incoming"
           value: "'mykey' in json(request.body) && 'myinnerkey' in json(request.body).mykey ? 'level_' + string(json(request.body).mykey.myinnerkey) : 'level_unknown'"
-          type: CEL
       body:
         value: "request.body"
-        type: CEL
     response:
       set:
         - name: "x-how-great"
           value:  "'x-incoming-stuff' in request.headers ? 'level_' + request.headers['x-incoming-stuff'] : 'level_unknown'"
-          type: CEL
         - name: "from-incoming"
           value: "'mykey' in json(request.body) && 'myinnerkey' in json(request.body).mykey ? 'key_level_' + string(json(request.body).mykey.myinnerkey) : 'key_unknown'"
-          type: CEL
       body:
         value: "request.headers"
-        type: CEL
