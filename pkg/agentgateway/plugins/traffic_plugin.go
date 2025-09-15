@@ -919,6 +919,12 @@ func convertTransformSpec(spec *v1alpha1.Transform) *api.PolicySpec_Transformati
 
 	// Handle body transformation if present
 	if spec.Body != nil && spec.Body.Value != nil {
+		// Warn if ParseAs is set since it's not supported for agentgateway
+		if spec.Body.ParseAs != "" {
+			logger.Warn("parseAs field is ignored for agentgateway, use json() function directly in CEL expressions",
+				"parse_as", spec.Body.ParseAs)
+		}
+
 		transform.Body = &api.PolicySpec_BodyTransformation{
 			Expression: string(*spec.Body.Value),
 		}
