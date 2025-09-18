@@ -155,12 +155,9 @@ Policies are configurable rules that control traffic behavior, security, and tra
 
 ### CEL Transformations
 
-The agentgateway data plane supports CEL (Common Expression Language) transformations through TrafficPolicy resources. CEL transformations allow you to modify requests and responses using powerful expression language.
+The agentgateway data plane supports [CEL](https://cel.dev/) (Common Expression Language) transformations through TrafficPolicy resources. CEL transformations allow you to modify requests and responses using powerful expression language.
 
-#### Key Differences from Envoy/Inja
-
-- **agentgateway**: Uses CEL expressions for transformations
-- **Envoy data plane**: Uses Inja template syntax for transformations
+Unlike the Envoy data plane transformations that support Inja, the agentgateway transformations use CEL expressions.
 
 #### Supported Transformation Types
 
@@ -176,7 +173,7 @@ The agentgateway data plane supports CEL (Common Expression Language) transforma
 
 #### Example
 
-Apply this config to setup basic transformations for agentgateway data plane.
+Apply this config to setup basic response and request header transformations for agentgateway data plane.
 
 ```shell
 kubectl apply -f- <<EOF
