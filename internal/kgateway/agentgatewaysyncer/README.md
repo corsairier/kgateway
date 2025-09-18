@@ -1001,3 +1001,325 @@ Port-forward, and send a request through the gateway:
 }
 }'
 ```
+
+### Tracing and Observability
+
+The agentgateway data plane supports comprehensive observability through OpenTelemetry (OTEL) tracing. You can configure tracing using custom ConfigMaps to integrate with various observability platforms and add custom trace fields for enhanced monitoring of your AI/LLM traffic.
+
+#### Configuring Tracing with ConfigMaps
+
+To enable tracing, you need to:
+
+1. **Create a custom ConfigMap** with your tracing configuration
+2. **Reference the ConfigMap** in your GatewayParameters
+3. **Deploy your Gateway** with the agentgateway class
+
+**Step 1: Create a ConfigMap**
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agent-gateway-config
+  namespace: default
+data:
+  config.yaml: |-
+    config:
+      tracing:
+        otlpEndpoint: http://jaeger-collector.observability.svc.cluster.local:4317
+        otlpProtocol: grpc
+        randomSampling: true
+        fields:
+          add:
+            gen_ai.operation.name: '"chat"'
+            gen_ai.system: "llm.provider"
+            gen_ai.request.model: "llm.request_model"
+            gen_ai.response.model: "llm.response_model"
+            gen_ai.usage.completion_tokens: "llm.output_tokens"
+            gen_ai.usage.prompt_tokens: "llm.input_tokens"
+```
+
+**Step 2: Configure GatewayParameters**
+
+```yaml
+apiVersion: gateway.kgateway.dev/v1alpha1
+kind: GatewayParameters
+metadata:
+  name: kgateway
+spec:
+  kube:
+    agentGateway:
+      enabled: true
+      logLevel: debug
+      customConfigMapName: agent-gateway-config
+```
+
+**Step 3: Create Gateway with agentgateway class**
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: agentgateway
+spec:
+  controllerName: kgateway.dev/kgateway
+  parametersRef:
+    group: gateway.kgateway.dev
+    kind: GatewayParameters
+    name: kgateway
+    namespace: default
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: agent-gateway
+spec:
+  gatewayClassName: agentgateway
+  listeners:
+    - protocol: HTTP
+      port: 8080
+      name: http
+```
+
+#### Tracing Configuration Options
+
+**Basic OTEL Configuration:**
+```yaml
+config:
+  tracing:
+    otlpEndpoint: http://localhost:4317      # OTEL collector endpoint
+    otlpProtocol: grpc                       # grpc or http
+    randomSampling: true                     # Enable/disable sampling
+    headers:                                 # Optional headers for authentication
+      Authorization: "Bearer <token>"
+```
+
+**Custom Trace Fields:**
+Use CEL expressions to add custom fields to your traces:
+
+```yaml
+config:
+  tracing:
+    fields:
+      add:
+        # Standard OpenTelemetry AI semantic conventions
+        gen_ai.operation.name: '"chat"'
+        gen_ai.system: "llm.provider"
+        gen_ai.request.model: "llm.request_model"
+        gen_ai.response.model: "llm.response_model"
+        gen_ai.usage.completion_tokens: "llm.output_tokens"
+        gen_ai.usage.prompt_tokens: "llm.input_tokens"
+        
+        # Custom business logic fields
+        user.id: "request.headers['x-user-id']"
+        request.path: "request.path"
+        backend.type: "llm.provider"
+```
+
+#### Integration Examples
+
+**Jaeger Integration:**
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jaeger-tracing-config
+data:
+  config.yaml: |-
+    config:
+      tracing:
+        otlpEndpoint: http://jaeger-collector.jaeger.svc.cluster.local:4317
+        otlpProtocol: grpc
+        randomSampling: true
+        fields:
+          add:
+            gen_ai.operation.name: '"chat"'
+            gen_ai.system: "llm.provider"
+            gen_ai.request.model: "llm.request_model"
+            gen_ai.response.model: "llm.response_model"
+            gen_ai.usage.completion_tokens: "llm.output_tokens"
+            gen_ai.usage.prompt_tokens: "llm.input_tokens"
+```
+
+**Langfuse Integration:**
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: langfuse-tracing-config
+data:
+  config.yaml: |-
+    config:
+      tracing:
+        otlpEndpoint: https://us.cloud.langfuse.com/api/public/otel
+        otlpProtocol: http
+        headers:
+          Authorization: "Basic <base64-encoded-credentials>"
+        randomSampling: true
+        fields:
+          add:
+            gen_ai.operation.name: '"chat"'
+            gen_ai.system: "llm.provider"
+            gen_ai.prompt: "llm.prompt"
+            gen_ai.completion: 'llm.completion.map(c, {"role":"assistant", "content": c})'
+            gen_ai.usage.completion_tokens: "llm.output_tokens"
+            gen_ai.usage.prompt_tokens: "llm.input_tokens"
+            gen_ai.request.model: "llm.request_model"
+            gen_ai.response.model: "llm.response_model"
+            gen_ai.request: "flatten(llm.params)"
+```
+
+**Phoenix (Arize) Integration:**
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: phoenix-tracing-config
+data:
+  config.yaml: |-
+    config:
+      tracing:
+        otlpEndpoint: http://localhost:4317
+        randomSampling: true
+        fields:
+          add:
+            span.name: '"openai.chat"'
+            openinference.span.kind: '"LLM"'
+            llm.system: "llm.provider"
+            llm.input_messages: 'flatten_recursive(llm.prompt.map(c, {"message": c}))'
+            llm.output_messages: 'flatten_recursive(llm.completion.map(c, {"role":"assistant", "content": c}))'
+            llm.token_count.completion: "llm.output_tokens"
+            llm.token_count.prompt: "llm.input_tokens"
+            llm.token_count.total: "llm.total_tokens"
+```
+
+**OpenLLMetry Integration:**
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openllmetry-tracing-config
+data:
+  config.yaml: |-
+    config:
+      tracing:
+        otlpEndpoint: http://localhost:4317
+        randomSampling: true
+        fields:
+          add:
+            span.name: '"openai.chat"'
+            gen_ai.operation.name: '"chat"'
+            gen_ai.system: "llm.provider"
+            gen_ai.prompt: "flatten_recursive(llm.prompt)"
+            gen_ai.completion: 'flatten_recursive(llm.completion.map(c, {"role":"assistant", "content": c}))'
+            gen_ai.usage.completion_tokens: "llm.output_tokens"
+            gen_ai.usage.prompt_tokens: "llm.input_tokens"
+            gen_ai.request.model: "llm.request_model"
+            gen_ai.response.model: "llm.response_model"
+            gen_ai.request: "flatten(llm.params)"
+            llm.is_streaming: "llm.streaming"
+```
+
+#### Important Notes
+
+- **ConfigMap Updates**: The ConfigMap is only read during agentgateway pod startup. To apply ConfigMap changes, restart the agentgateway pod
+- **Namespace**: The ConfigMap must be in the same namespace as the GatewayParameters resource
+- **Validation**: Invalid CEL expressions in trace fields will be logged but won't prevent the gateway from starting
+- **Performance**: Be mindful of the number and complexity of custom trace fields, as they impact performance
+- **Sampling**: Use `randomSampling` to control trace volume in production environments
+
+#### Complete Example with AI Backend
+
+```yaml
+# ConfigMap with tracing configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ai-gateway-tracing
+  namespace: default
+data:
+  config.yaml: |-
+    config:
+      tracing:
+        otlpEndpoint: http://jaeger-collector.observability.svc.cluster.local:4317
+        otlpProtocol: grpc
+        randomSampling: true
+        fields:
+          add:
+            gen_ai.operation.name: '"chat"'
+            gen_ai.system: "llm.provider"
+            gen_ai.request.model: "llm.request_model"
+            gen_ai.response.model: "llm.response_model"
+            gen_ai.usage.completion_tokens: "llm.output_tokens"
+            gen_ai.usage.prompt_tokens: "llm.input_tokens"
+            user.id: "request.headers['x-user-id'] || 'anonymous'"
+            request.path: "request.path"
+---
+# GatewayParameters referencing the ConfigMap
+apiVersion: gateway.kgateway.dev/v1alpha1
+kind: GatewayParameters
+metadata:
+  name: kgateway
+spec:
+  kube:
+    agentGateway:
+      enabled: true
+      logLevel: debug
+      customConfigMapName: ai-gateway-tracing
+---
+# GatewayClass and Gateway configuration
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: agentgateway
+spec:
+  controllerName: kgateway.dev/kgateway
+  parametersRef:
+    group: gateway.kgateway.dev
+    kind: GatewayParameters
+    name: kgateway
+    namespace: default
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: ai-gateway
+spec:
+  gatewayClassName: agentgateway
+  listeners:
+    - protocol: HTTP
+      port: 8080
+      name: http
+---
+# AI Backend and Route
+apiVersion: gateway.kgateway.dev/v1alpha1
+kind: Backend
+metadata:
+  name: openai-backend
+spec:
+  type: AI
+  ai:
+    llm:
+      provider:
+        openai:
+          model: "gpt-4o-mini"
+          authToken:
+            kind: "SecretRef"
+            secretRef:
+              name: openai-secret
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: ai-route
+spec:
+  parentRefs:
+    - name: ai-gateway
+  rules:
+    - backendRefs:
+        - name: openai-backend
+          group: gateway.kgateway.dev
+          kind: Backend
+```
+
+This configuration will provide comprehensive tracing for your AI traffic, including token usage, model information, and custom business context.
