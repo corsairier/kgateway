@@ -1006,7 +1006,11 @@ Port-forward, and send a request through the gateway:
 
 The agentgateway data plane supports comprehensive observability through OpenTelemetry (OTEL) tracing. You can configure tracing using custom ConfigMaps to integrate with various observability platforms and add custom trace fields for enhanced monitoring of your AI/LLM traffic.
 
+For detailed information about tracing configuration and observability features, see the [agentgateway observability documentation](https://agentgateway.dev/docs/reference/observability/traces/).
+
 #### Configuring Tracing with ConfigMaps
+
+> **Note**: This approach statically configures tracing at startup. Changes to the ConfigMap are only picked up during agentgateway pod initialization, so you must restart the pod to apply configuration updates.
 
 To enable tracing, you need to:
 
@@ -1322,4 +1326,211 @@ spec:
           kind: Backend
 ```
 
-This configuration will provide comprehensive tracing for your AI traffic, including token usage, model information, and custom business context.
+#### Example with MCP Tool Calling and Trace Verification
+
+Here's a complete example that demonstrates tracing MCP tool calls, which generates rich trace spans for `list_tools` and `call_tool` operations:
+
+```yaml
+# Tracing Configuration ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agentgateway-tracing-config
+  namespace: default
+data:
+  config.yaml: |-
+    config:
+      tracing:
+        otlpEndpoint: http://localhost:4317
+        randomSampling: true
+        fields:
+          add:
+            # MCP-specific trace fields
+            mcp.operation.name: "request.path"
+            mcp.tool.name: "request.headers['x-tool-name'] || 'unknown'"
+            mcp.session.id: "request.headers['x-session-id'] || 'anonymous'"
+            backend.type: '"mcp"'
+            request.method: "request.method"
+            response.status: "response.status_code"
+---
+# Gateway Parameters with tracing configuration
+apiVersion: gateway.kgateway.dev/v1alpha1
+kind: GatewayParameters
+metadata:
+  name: agentgateway-params
+  namespace: default
+spec:
+  kube:
+    agentGateway:
+      enabled: true
+      logLevel: debug
+      customConfigMapName: agentgateway-tracing-config
+---
+# Gateway Class
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: agentgateway
+spec:
+  controllerName: kgateway.dev/kgateway
+  parametersRef:
+    group: gateway.kgateway.dev
+    kind: GatewayParameters
+    name: agentgateway-params
+    namespace: default
+---
+# Gateway
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: agentgateway
+  namespace: default
+spec:
+  gatewayClassName: agentgateway
+  listeners:
+    - protocol: HTTP
+      port: 3000
+      name: http
+      allowedRoutes:
+        namespaces:
+          from: All
+---
+# MCP Backend
+apiVersion: gateway.kgateway.dev/v1alpha1
+kind: Backend
+metadata:
+  name: mcp-everything-backend
+  namespace: default
+spec:
+  type: MCP
+  mcp:
+    targets:
+      - name: everything
+        selector:
+          service:
+            matchLabels:
+              app: mcp-everything
+---
+# HTTPRoute with CORS policy and MCP backend
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: mcp-route
+  namespace: default
+spec:
+  parentRefs:
+    - name: agentgateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: "/"
+      filters:
+        # CORS policy
+        - type: CORS
+          cors:
+            allowOrigins:
+            - "http://localhost:3000"
+            - "http://localhost:8080" 
+            - "http://localhost:15000"
+            - "http://127.0.0.1:3000"
+            - "http://127.0.0.1:8080"
+            - "http://127.0.0.1:15000"
+            allowMethods:
+            - "GET"
+            - "POST"
+            - "PUT"
+            - "DELETE"
+            - "OPTIONS"
+            allowHeaders:
+            - "Content-Type"
+            - "Authorization"
+            - "Accept"
+            - "mcp-protocol-version"
+            - "Cache-Control"
+            maxAge: 86400
+      backendRefs:
+        - name: mcp-everything-backend
+          group: gateway.kgateway.dev
+          kind: Backend
+---
+# MCP Everything Server Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-everything
+  namespace: default
+  labels:
+    app: mcp-everything
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-everything
+  template:
+    metadata:
+      labels:
+        app: mcp-everything
+    spec:
+      containers:
+        - name: mcp-everything
+          image: node:20-alpine
+          command: ["npx"]
+          args: ["@modelcontextprotocol/server-everything", "streamableHttp"]
+          ports:
+            - containerPort: 3001
+          env:
+            - name: PORT
+              value: "3001"
+---
+# Service for MCP Everything Server
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-everything-service
+  namespace: default
+  labels:
+    app: mcp-everything
+spec:
+  selector:
+    app: mcp-everything
+  ports:
+    - protocol: TCP
+      port: 3001
+      targetPort: 3001
+      appProtocol: kgateway.dev/mcp
+  type: ClusterIP
+```
+
+**Testing MCP Tool Calls with Traces:**
+
+1. **Set up port forwarding:**
+```bash
+# Port forward to the gateway pod
+kubectl port-forward deployment/agentgateway 15000:15000 3000:3000
+```
+
+**Verify traces:**
+
+1. **Open the agentgateway UI** to view your listener and target configuration.
+
+2. **Connect to the MCP server** with the agentgateway UI playground.
+   - From the navigation menu, click **Playground**.
+
+3. **In the Testing card**, review your Connection details and click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target.
+
+4. **Verify that you see a list of Available Tools**.
+
+5. **Verify access to a tool**:
+   - From the Available Tools list, select the **echo** tool.
+   - In the message field, enter any string, such as `hello world`, and click **Run Tool**.
+   - Verify that you see your message echoed in the Response card.
+
+6. **Open the Jaeger UI**.
+
+7. **View traces**:
+   - From the Service drop down, select **agentgateway**.
+   - Click **Find Traces**.
+   - Verify that you can see trace spans for listing the MCP tools (`list_tools`) and calling a tool (`call_tool`).
+
+This configuration provides comprehensive tracing for your MCP tool interactions, making it easy to debug issues and monitor performance of your agent-to-agent communications.
