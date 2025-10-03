@@ -41,6 +41,7 @@ const (
 	localRateLimitPolicySuffix  = ":rl-local"
 	globalRateLimitPolicySuffix = ":rl-global"
 	transformationPolicySuffix  = ":transformation"
+	csrfPolicySuffix            = ":csrf"
 )
 
 var logger = logging.New("agentgateway/plugins")
@@ -352,6 +353,16 @@ func translateTrafficPolicyToAgw(
 			errs = append(errs, err)
 		}
 		agwPolicies = append(agwPolicies, transformationPolicies...)
+	}
+
+	// Process CSRF policies if present
+	if trafficPolicy.Spec.Csrf != nil {
+		csrfPolicies, err := processCSRFPolicy(trafficPolicy, policyName, policyTarget)
+		if err != nil {
+			logger.Error("error processing CSRF policy", "error", err)
+			errs = append(errs, err)
+		}
+		agwPolicies = append(agwPolicies, csrfPolicies...)
 	}
 
 	return agwPolicies, errors.Join(errs...)
@@ -1057,6 +1068,32 @@ func toJSONValue(value string) (string, error) {
 		return "", err
 	}
 	return string(marshaled), nil
+}
+
+func processCSRFPolicy(trafficPolicy *v1alpha1.TrafficPolicy, policyName string, policyTarget *api.PolicyTarget) ([]AgwPolicy, error) {
+	csrf := trafficPolicy.Spec.Csrf
+
+	var additionalOrigins []string
+
+	for _, origin := range csrf.AdditionalOrigins {
+		if origin.Exact != nil {
+			additionalOrigins = append(additionalOrigins, *origin.Exact)
+		}
+	}
+
+	csrfPolicy := &api.Policy{
+		Name:   policyName + csrfPolicySuffix + attachmentName(policyTarget),
+		Target: policyTarget,
+		Spec: &api.PolicySpec{
+			Kind: &api.PolicySpec_Csrf{
+				Csrf: &api.PolicySpec_CSRF{
+					AdditionalOrigins: additionalOrigins,
+				},
+			},
+		},
+	}
+
+	return []AgwPolicy{{Policy: csrfPolicy}}, nil
 }
 
 // processTransformationPolicy processes transformation configuration and creates corresponding Agw policies
