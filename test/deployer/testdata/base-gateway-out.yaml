@@ -11,6 +11,7 @@ metadata:
     app.kubernetes.io/instance: gw
     gateway.networking.k8s.io/gateway-name: gw
     app.kubernetes.io/version: "1.0.0-ci1"
+    gateway.networking.k8s.io/gateway-class-name: kgateway
     app.kubernetes.io/managed-by: Helm
 automountServiceAccountToken: false
 ---
@@ -27,6 +28,7 @@ metadata:
     app.kubernetes.io/instance: gw
     gateway.networking.k8s.io/gateway-name: gw
     app.kubernetes.io/version: "1.0.0-ci1"
+    gateway.networking.k8s.io/gateway-class-name: kgateway
     app.kubernetes.io/managed-by: Helm
 data:
   envoy.yaml: |
@@ -215,6 +217,7 @@ metadata:
     app.kubernetes.io/instance: gw
     gateway.networking.k8s.io/gateway-name: gw
     app.kubernetes.io/version: "1.0.0-ci1"
+    gateway.networking.k8s.io/gateway-class-name: kgateway
     app.kubernetes.io/managed-by: Helm
 spec:
   type: LoadBalancer
@@ -240,6 +243,7 @@ metadata:
     app.kubernetes.io/instance: gw
     gateway.networking.k8s.io/gateway-name: gw
     app.kubernetes.io/version: "1.0.0-ci1"
+    gateway.networking.k8s.io/gateway-class-name: kgateway
     app.kubernetes.io/managed-by: Helm
 spec:
   replicas: 1
@@ -259,6 +263,7 @@ spec:
         app.kubernetes.io/name: gw
         app.kubernetes.io/instance: gw
         gateway.networking.k8s.io/gateway-name: gw
+        gateway.networking.k8s.io/gateway-class-name: kgateway
     spec:
       serviceAccountName: gw
       containers:
@@ -280,7 +285,6 @@ spec:
         - "--log-level"
         - "info"
         image: "ghcr.io/envoy-wrapper:v2.1.0-dev"
-        imagePullPolicy: 
         volumeMounts:
         - mountPath: /etc/envoy
           name: envoy-config
@@ -324,7 +328,7 @@ spec:
               command:
               - /bin/sh
               - -c
-              - wget --post-data "" -O /dev/null 127.0.0.1:19000/healthcheck/fail; sleep 10    
+              - wget --post-data "" -O /dev/null 127.0.0.1:19000/healthcheck/fail; sleep 10   
       terminationGracePeriodSeconds: 60
       volumes:
       - name: xds-token

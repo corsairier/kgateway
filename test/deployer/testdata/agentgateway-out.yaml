@@ -11,6 +11,7 @@ metadata:
     app.kubernetes.io/instance: gw
     gateway.networking.k8s.io/gateway-name: gw
     app.kubernetes.io/version: "1.0.0-ci1"
+    gateway.networking.k8s.io/gateway-class-name: agentgateway
     app.kubernetes.io/managed-by: Helm
 automountServiceAccountToken: false
 ---
@@ -26,6 +27,7 @@ metadata:
     app.kubernetes.io/instance: gw
     gateway.networking.k8s.io/gateway-name: gw
     app.kubernetes.io/version: "1.0.0-ci1"
+    gateway.networking.k8s.io/gateway-class-name: agentgateway
     app.kubernetes.io/managed-by: Helm
 data:
   config.yaml: |
@@ -43,6 +45,7 @@ metadata:
     app.kubernetes.io/instance: gw
     gateway.networking.k8s.io/gateway-name: gw
     app.kubernetes.io/version: "1.0.0-ci1"
+    gateway.networking.k8s.io/gateway-class-name: agentgateway
     app.kubernetes.io/managed-by: Helm
 spec:
   type: LoadBalancer
@@ -57,7 +60,6 @@ spec:
     gateway.networking.k8s.io/gateway-name: gw
 ---
 # Source: kgateway-proxy/templates/gateway/agent-gateway-deployment.yaml
-# TODO(npolshak): look into having agentgateway as a separate helm chart https://github.com/kgateway-dev/kgateway/issues/11240
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -69,9 +71,9 @@ metadata:
     app.kubernetes.io/instance: gw
     gateway.networking.k8s.io/gateway-name: gw
     app.kubernetes.io/version: "1.0.0-ci1"
+    gateway.networking.k8s.io/gateway-class-name: agentgateway
     app.kubernetes.io/managed-by: Helm
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: gw
@@ -80,20 +82,23 @@ spec:
   template:
     metadata:
       annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "15020"
+        prometheus.io/scrape: "true"
       labels:
         app.kubernetes.io/name: gw
         app.kubernetes.io/instance: gw
         gateway.networking.k8s.io/gateway-name: gw
+        gateway.networking.k8s.io/gateway-class-name: agentgateway
     spec:
       serviceAccountName: gw
       securityContext:
         sysctls:
-          - name: net.ipv4.ip_unprivileged_port_start
-            value: "0"
+        - name: net.ipv4.ip_unprivileged_port_start
+          value: "0"
       containers:
         - name: agent-gateway
           image: "ghcr.io/agentgateway/agentgateway:0.9.1-alpha.852c313eda0a85f9666799e86912a43313455641"
-          imagePullPolicy: 
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -103,7 +108,7 @@ spec:
               - ALL
             readOnlyRootFilesystem: true
             runAsNonRoot: true
-            runAsUser: 10101 
+            runAsUser: 10101
           startupProbe:
             failureThreshold: 60
             httpGet:
@@ -124,7 +129,7 @@ spec:
                 command:
                   - /bin/sh
                   - -c
-                  - wget --post-data "" -O /dev/null 127.0.0.1:15000/quitquitquit; sleep 10 
+                  - wget --post-data "" -O /dev/null 127.0.0.1:15000/quitquitquit; sleep 10
           args:
             - -f
             - /config/config.yaml
@@ -156,7 +161,7 @@ spec:
             - name: GATEWAY
               value: gw
 
- 
+
           volumeMounts:
             - name: config-volume
               mountPath: /config
